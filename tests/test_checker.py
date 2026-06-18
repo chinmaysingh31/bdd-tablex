@@ -118,6 +118,26 @@ def test_cli_describes_schema_as_text(capsys):
     assert "name: label='name'" in output
 
 
+def test_module_entrypoint_describes_schema_as_text(capsys):
+    from bdd_tablex.__main__ import main as module_main
+
+    module = ModuleType("bdd_tablex_module_describe_schema")
+    module.CheckedUserTable = CheckedUserTable
+    sys.modules[module.__name__] = module
+    try:
+        exit_code = module_main(
+            [
+                "describe",
+                "bdd_tablex_module_describe_schema:CheckedUserTable",
+            ]
+        )
+    finally:
+        sys.modules.pop(module.__name__, None)
+
+    assert exit_code == 0
+    assert "Schema: CheckedUserTable" in capsys.readouterr().out
+
+
 def test_cli_describes_schema_as_json(capsys):
     module = ModuleType("bdd_tablex_cli_describe_json_schema")
     module.CheckedUserTable = CheckedUserTable

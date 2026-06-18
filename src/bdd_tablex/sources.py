@@ -1,4 +1,12 @@
-"""Read-only source metadata attached to parsed schema records."""
+"""Read-only source metadata attached to parsed schema records.
+
+The parser stores original table cells separately from parsed values so custom
+validators and tools can report precise feature-file coordinates.
+
+!!! info
+    Metadata is immutable after record construction. Transformation may change
+    current values, but source cells preserve the original location and text.
+"""
 
 from __future__ import annotations
 
@@ -20,6 +28,10 @@ class RecordSource:
         column: Source key/ID column for a column-oriented record.
         cells: Mapping from schema attribute names to their source cells.
 
+    !!! warning
+        Some fields may not have source cells, especially values produced by
+        defaults for omitted optional fields.
+
     """
 
     item_id: Any | None
@@ -36,7 +48,22 @@ class RecordSource:
         column: int | None = None,
         cells: Mapping[str, TableCell] | None = None,
     ) -> RecordSource:
-        """Create immutable metadata from parser-owned source values."""
+        """Create immutable metadata from parser-owned source values.
+
+        Args:
+            item_id: Parsed record ID when available.
+            row: Source row for row-oriented records.
+            column: Source key/ID column for column-oriented records.
+            cells: Mapping from schema field names to source cells.
+
+        Returns:
+            A frozen ``RecordSource`` with a read-only cell mapping.
+
+        !!! info
+            The mapping is copied so later caller mutations cannot change
+            record provenance.
+
+        """
         return cls(
             item_id=item_id,
             row=row,
@@ -45,7 +72,23 @@ class RecordSource:
         )
 
     def source_for(self, field_name: str) -> TableCell:
-        """Return the source cell for one schema attribute name."""
+        """Return the source cell for one schema attribute name.
+
+        Args:
+            field_name: Python schema attribute name.
+
+        Returns:
+            ``TableCell`` that supplied the parsed value.
+
+        Raises:
+            KeyError: If the field has no recorded source cell.
+
+        !!! warning
+            Missing optional fields with defaults do not have source cells.
+            Use this method when a validator is responding to a value that came
+            from the feature table itself.
+
+        """
         try:
             return self.cells[field_name]
         except KeyError as exc:

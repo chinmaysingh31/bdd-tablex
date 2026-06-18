@@ -1,4 +1,15 @@
-"""Row- and column-oriented BDD table schemas."""
+"""Row- and column-oriented BDD table schemas.
+
+This module owns the core parsing lifecycle: raw rows become source-aware
+``TableData``, optional transformations run, labels are validated, field values
+are parsed, variants are selected, references are resolved, validators run, and
+optional output objects are built.
+
+!!! warning
+    Most helpers in this module are private lifecycle steps. They are documented
+    because they carry important invariants, not because they are stable public
+    extension points.
+"""
 
 from __future__ import annotations
 
@@ -26,12 +37,37 @@ TableT = TypeVar("TableT", bound="BaseTable")
 
 
 class SchemaMeta(type):
-    """Collect field declarations and validate schema classes as they form."""
+    """Collect field declarations and validate schema classes as they form.
+
+    !!! info
+        Schema creation is where inheritance, annotation-driven parser
+        inference, and declarative variant generation become concrete runtime
+        metadata.
+    """
 
     def __new__(
         mcls, name: str, bases: tuple[type, ...], namespace: dict[str, Any]
     ) -> SchemaMeta:
-        """Create one schema, infer parsers, and register declarative variants."""
+        """Create one schema class.
+
+        Args:
+            name: Class name being created.
+            bases: Base classes from the class definition.
+            namespace: Class body namespace.
+
+        Returns:
+            Created schema class.
+
+        Raises:
+            TypeError: If declarative variant configuration is invalid.
+            SchemaDefinitionError: If labels or policies are ambiguous.
+
+        !!! info
+            Inherited fields are cloned before being attached to the new class.
+            This prevents parser inference or descriptor naming on a subclass
+            from mutating the base schema declaration.
+
+        """
         fields: dict[str, Field] = {}
         for base in bases:
             fields.update(
@@ -78,7 +114,20 @@ class SchemaMeta(type):
 
     @staticmethod
     def _validate_declaration(cls: Any) -> None:
-        """Reject ambiguous field labels and invalid schema policies early."""
+        """Reject ambiguous labels and invalid schema policies.
+
+        Args:
+            cls: Schema class being validated during creation.
+
+        Raises:
+            SchemaDefinitionError: If labels/aliases collide or a policy value
+                is unsupported.
+
+        !!! warning
+            This runs at import/class-definition time, so failures identify
+            schema-code problems before any feature table is parsed.
+
+        """
         labels: dict[str, str] = {}
         for field_name, declared in cls.__fields__.items():
             for label in declared.labels:
@@ -100,7 +149,21 @@ class SchemaMeta(type):
 
     @staticmethod
     def _register_component_variants(cls: Any, declared: Field) -> None:
-        """Compose declarative variant components with their table schema."""
+        """Compose declarative variant components with their table schema.
+
+        Args:
+            cls: Base table schema declaring ``discriminator(..., variants=...)``.
+            declared: Discriminator field containing the component mapping.
+
+        Raises:
+            TypeError: If a mapping value is not a ``TableFields`` component.
+
+        !!! info
+            Generated variant classes inherit from both the component and the
+            base schema, so selected records are instances of the base table
+            and the active component.
+
+        """
         variants = declared.variants or {}
         for value, component in variants.items():
             if not isinstance(component, SchemaMeta) or not issubclass(
@@ -138,6 +201,12 @@ class TableFields(metaclass=SchemaMeta):
     Components do not parse tables by themselves. Mix them into a concrete
     schema after ``RowTable`` or ``ColumnTable`` so their fields are collected
     by the shared schema metaclass.
+
+    !!! example
+        ```python
+        class ArticleFields(TableFields):
+            body = field("Body*", required=True)
+        ```
     """
 
 
@@ -147,6 +216,18 @@ class BaseTable(TableRecord, TableFields):
     Subclasses declare fields and may override lifecycle hooks such as
     :meth:`validate_record`. Users normally subclass :class:`RowTable` or
     :class:`ColumnTable` instead of using this class directly.
+
+    Attributes:
+        table_transformer: Optional reusable transformer object.
+        output_model: Optional callable used by the default ``build_output``.
+        unknown_fields: Policy for table labels not declared by the schema.
+        inapplicable_fields: Policy for populated variant fields that do not
+            apply to the selected variant.
+
+    !!! info
+        Public parsing APIs live on ``RowTable`` and ``ColumnTable`` because
+        orientation determines how labels and records are found.
+
     """
 
     table_transformer = None
@@ -169,9 +250,43 @@ class BaseTable(TableRecord, TableFields):
         Registration deliberately uses ordinary Python values. If a
         ``discriminator_field`` has a parser, register the parsed value rather
         than the raw table text.
+
+        Args:
+            value: Parsed discriminator value that should select the decorated
+                schema subclass.
+
+        Returns:
+            A class decorator that registers and returns the variant class.
+
+        !!! example
+            ```python
+            @ContentTable.variant("Article")
+            class ArticleContent(ContentTable):
+                body = field("Body*", required=True)
+            ```
+
         """
 
         def register(variant_cls: type[BaseTable]) -> type[BaseTable]:
+            """Register the decorated class as a discriminator variant.
+
+            Args:
+                variant_cls: Schema subclass selected by ``value``.
+
+            Returns:
+                The same class supplied by the decorator.
+
+            Raises:
+                TypeError: If the class does not inherit from the base schema
+                    or the discriminator value is unhashable.
+                ValueError: If ``value`` is already registered.
+
+            !!! warning
+                Variant values are looked up after discriminator parsing, so a
+                custom discriminator parser changes the keys that should be
+                registered here.
+
+            """
             if not isinstance(variant_cls, type) or not issubclass(variant_cls, cls):
                 raise TypeError(
                     f"A variant of {cls.__name__} must inherit from {cls.__name__}"
@@ -200,6 +315,16 @@ class BaseTable(TableRecord, TableFields):
         This is especially useful with declarative ``discriminator()``
         mappings, whose concrete schema classes are generated by the package.
         A missing value raises ``KeyError`` just like an ordinary mapping.
+
+        Args:
+            value: Parsed discriminator value.
+
+        Returns:
+            Registered concrete variant schema class.
+
+        !!! info
+            Prefer this method over relying on generated variant class names.
+
         """
         return cls.__variants__[value]
 
@@ -209,6 +334,16 @@ class BaseTable(TableRecord, TableFields):
 
         The import is local to keep the parser core independent from the
         introspection dataclasses during class creation.
+
+        Returns:
+            Immutable machine-readable table contract.
+
+        !!! example
+            ```python
+            contract = UserTable.describe()
+            assert contract.fields[0].label == "name"
+            ```
+
         """
         from .introspection import describe_schema
 
@@ -222,7 +357,25 @@ class BaseTable(TableRecord, TableFields):
         context: Mapping[str, Any] | ParseContext | None = None,
         error_mode: str = "first",
     ) -> list[Any]:
-        """Parse a table through a concrete row or column orientation."""
+        """Parse a table through a concrete row or column orientation.
+
+        Args:
+            datatable: Raw string rows or source-aware ``TableData``.
+            context: Optional project data or existing parse context.
+            error_mode: ``"first"`` or ``"collect"``.
+
+        Returns:
+            Public output objects for parsed records.
+
+        Raises:
+            NotImplementedError: Always, because ``BaseTable`` lacks an
+                orientation.
+
+        !!! warning
+            Use ``RowTable`` or ``ColumnTable``. This base method documents the
+            common signature only.
+
+        """
         raise NotImplementedError("Use RowTable or ColumnTable")
 
     @classmethod
@@ -239,17 +392,65 @@ class BaseTable(TableRecord, TableFields):
         objects when ``output_model`` or ``build_output()`` is configured.
         ``parse_records()`` is for callers and type checkers that specifically
         want instances of the schema class before output conversion.
+
+        Args:
+            datatable: Raw string rows or source-aware ``TableData``.
+            context: Optional project data or existing parse context.
+            error_mode: ``"first"`` or ``"collect"``.
+
+        Returns:
+            Validated schema record instances.
+
+        Raises:
+            NotImplementedError: Always, because ``BaseTable`` lacks an
+                orientation.
+
+        !!! info
+            Concrete orientation classes implement this shared contract.
+
         """
         raise NotImplementedError("Use RowTable or ColumnTable")
 
     def validate_record(self, context: ParseContext) -> None:
-        """Validate one parsed record after all field values are available."""
+        """Validate one parsed record after fields and references are available.
+
+        Args:
+            context: Parse context for the current operation.
+
+        Raises:
+            BDDTableError: For custom source-aware diagnostics.
+            Exception: Any other exception is wrapped as a record validation
+                failure.
+
+        !!! example
+            ```python
+            def validate_record(self, context):
+                if self.end < self.start:
+                    raise ValueError("end must be after start")
+            ```
+
+        """
 
     @classmethod
     def validate_records(
         cls, records: Sequence[BaseTable], context: ParseContext
     ) -> None:
-        """Validate relationships across all parsed records in one table."""
+        """Validate relationships across all parsed records.
+
+        Args:
+            records: Validated records from one table.
+            context: Parse context for the current operation.
+
+        Raises:
+            BDDTableError: For custom source-aware diagnostics.
+            Exception: Any other exception is wrapped as a table validation
+                failure.
+
+        !!! info
+            This hook runs after local references are resolved, so validators
+            can inspect linked records.
+
+        """
 
     @classmethod
     def build_output(cls, record: BaseTable, context: ParseContext) -> Any:
@@ -260,6 +461,18 @@ class BaseTable(TableRecord, TableFields):
         the record fields as keyword arguments. Projects may override this
         hook for custom constructors, selected fields, context dependencies,
         or factory services.
+
+        Args:
+            record: Validated schema record.
+            context: Parse context for the current operation.
+
+        Returns:
+            Public object returned by ``parse`` for this record.
+
+        !!! warning
+            ``parse_records`` bypasses this hook intentionally and returns the
+            schema record itself.
+
         """
         if cls.output_model is None:
             return record
@@ -277,6 +490,18 @@ class BaseTable(TableRecord, TableFields):
         Implementations must return :class:`TableData`. Reuse existing cells
         and create changed values with :meth:`TableCell.with_value` so later
         errors continue to identify the original feature-file cell.
+
+        Args:
+            table: Source-aware table after raw input normalization.
+            context: Parse context for the current operation.
+
+        Returns:
+            Source-aware table consumed by orientation-specific parsing.
+
+        !!! warning
+            Returning raw rows loses source information and is rejected by the
+            parser lifecycle.
+
         """
         if cls.table_transformer is None:
             return table
@@ -284,7 +509,17 @@ class BaseTable(TableRecord, TableFields):
 
     @classmethod
     def _validate_variant_configuration(cls) -> None:
-        """Validate discriminator and variant declarations before parsing."""
+        """Validate discriminator and variant declarations before parsing.
+
+        Raises:
+            BDDTableError: If variants lack exactly one inherited discriminator
+                or replace the base discriminator field.
+
+        !!! info
+            This check runs at parse time because variants may be registered by
+            decorators after the base class has already been created.
+
+        """
         cls._validate_schema_labels()
         if not cls.__variants__:
             return
@@ -324,7 +559,16 @@ class BaseTable(TableRecord, TableFields):
 
     @classmethod
     def _accepted_labels(cls) -> set[str]:
-        """Return labels declared by the base schema or any variant."""
+        """Return labels declared by the base schema or any variant.
+
+        Returns:
+            Set of canonical labels and aliases accepted by the table family.
+
+        !!! info
+            Variant labels are accepted at table-shape validation time because
+            the parser has not selected a variant for each record yet.
+
+        """
         labels = {
             label for declared in cls.__fields__.values() for label in declared.labels
         }
@@ -338,7 +582,16 @@ class BaseTable(TableRecord, TableFields):
 
     @classmethod
     def _declared_by_label(cls) -> dict[str, tuple[str, Field]]:
-        """Map every canonical label and alias to its schema declaration."""
+        """Map every canonical label and alias to its declaration.
+
+        Returns:
+            Mapping from table label text to ``(field_name, Field)``.
+
+        !!! info
+            This map is per schema class, so base and variant duplicate checks
+            can evaluate their own applicable fields.
+
+        """
         return {
             label: (name, declared)
             for name, declared in cls.__fields__.items()
@@ -351,7 +604,20 @@ class BaseTable(TableRecord, TableFields):
         declared: Field,
         cells_by_label: Mapping[str, TableCell],
     ) -> TableCell | None:
-        """Return the source cell using a canonical label or one alias."""
+        """Return the source cell for a field using its label or aliases.
+
+        Args:
+            declared: Field declaration to locate.
+            cells_by_label: Mapping from actual table labels to source cells.
+
+        Returns:
+            Matching source cell, or ``None`` when the field is absent.
+
+        !!! info
+            Alias lookup preserves the distinction between an omitted field and
+            an explicit empty cell.
+
+        """
         for label in declared.labels:
             if label in cells_by_label:
                 return cells_by_label[label]
@@ -362,7 +628,20 @@ class BaseTable(TableRecord, TableFields):
         cls,
         cells_by_label: Mapping[str, TableCell],
     ) -> dict[str, Any]:
-        """Return unknown values when the schema's policy preserves them."""
+        """Return unknown values when the schema policy preserves them.
+
+        Args:
+            cells_by_label: Mapping from actual table labels to source cells.
+
+        Returns:
+            Unknown labels and current cell values, or an empty dictionary when
+            unknown fields are not preserved.
+
+        !!! warning
+            Preserved extras are not parsed by field parsers. They retain the
+            current table value after any transformation.
+
+        """
         if cls.unknown_fields != "preserve":
             return {}
         accepted = cls._accepted_labels()
@@ -378,7 +657,22 @@ class BaseTable(TableRecord, TableFields):
         label_cells: Sequence[TableCell],
         errors: list[BDDTableError] | None = None,
     ) -> None:
-        """Validate unknown labels and canonical/alias duplication."""
+        """Validate unknown labels and canonical/alias duplication.
+
+        Args:
+            label_cells: Source cells containing labels for one table
+                orientation.
+            errors: Optional collection sink for recoverable diagnostics.
+
+        Raises:
+            BDDTableError: In fail-fast mode when an invalid label is found.
+
+        !!! info
+            Canonical/alias duplication is checked per schema and per variant
+            so a table cannot provide both ``Headline`` and its alias ``Title``
+            for the same applicable field.
+
+        """
         accepted = cls._accepted_labels()
         for cell in label_cells:
             if cell.value in accepted or cls.unknown_fields != "forbid":
@@ -436,7 +730,23 @@ class BaseTable(TableRecord, TableFields):
         item_id: Any | None,
         errors: list[BDDTableError] | None = None,
     ) -> tuple[type[BaseTable] | None, dict[str, Any]]:
-        """Select one record schema and return already parsed selector values."""
+        """Select one record schema and return parsed selector values.
+
+        Args:
+            cells_by_label: Mapping from table labels to cells for one record.
+            parse_context: Parse context for the current operation.
+            item_id: Current record ID when available.
+            errors: Optional collection sink for recoverable diagnostics.
+
+        Returns:
+            ``(record_schema, parsed_selector_values)``. ``record_schema`` is
+            ``None`` when selector parsing failed in collect mode.
+
+        !!! warning
+            The discriminator parser runs before variant lookup. Registered
+            variant keys must match parsed values, not raw table text.
+
+        """
         if not cls.__variants__:
             return cls, {}
 
@@ -491,6 +801,21 @@ class BaseTable(TableRecord, TableFields):
         columns. An empty cell is therefore harmless, but a non-empty cell for
         a field that the selected variant does not declare usually indicates
         a typo or a misunderstood table.
+
+        Args:
+            record_cls: Variant schema selected for the current record.
+            cells_by_label: Mapping from table labels to cells for one record.
+            item_id: Current record ID when available.
+            errors: Optional collection sink for recoverable diagnostics.
+
+        Returns:
+            Preserved inapplicable values when policy is ``"preserve"``.
+
+        !!! info
+            Empty inapplicable cells are ignored so one table can contain the
+            union of variant fields without requiring every record shape to
+            populate every column or row.
+
         """
         if record_cls is cls:
             return {}
@@ -529,6 +854,22 @@ class BaseTable(TableRecord, TableFields):
     def _parse_context(
         cls, context: Mapping[str, Any] | ParseContext | None
     ) -> ParseContext:
+        """Normalize user-supplied parse context.
+
+        Args:
+            context: ``None``, a mapping, or an existing ``ParseContext``.
+
+        Returns:
+            A ``ParseContext`` instance.
+
+        Raises:
+            BDDTableError: If the context cannot be treated as a mapping.
+
+        !!! info
+            Wrapping context errors in ``BDDTableError`` keeps public parse
+            failures consistent with table diagnostics.
+
+        """
         try:
             return ParseContext.from_value(context)
         except (TypeError, ValueError) as exc:
@@ -540,7 +881,19 @@ class BaseTable(TableRecord, TableFields):
 
     @classmethod
     def _validate_error_mode(cls, error_mode: str) -> None:
-        """Validate the public failure strategy before parsing begins."""
+        """Validate the public failure strategy before parsing begins.
+
+        Args:
+            error_mode: Public parser failure strategy.
+
+        Raises:
+            ValueError: If ``error_mode`` is not ``"first"`` or ``"collect"``.
+
+        !!! warning
+            This is an API misuse check rather than a table diagnostic, so it
+            raises ``ValueError`` directly.
+
+        """
         if error_mode not in {"first", "collect"}:
             raise ValueError("error_mode must be 'first' or 'collect'")
 
@@ -549,7 +902,23 @@ class BaseTable(TableRecord, TableFields):
         error: BDDTableError,
         errors: list[BDDTableError] | None,
     ) -> object:
-        """Raise immediately or append one recoverable diagnostic."""
+        """Raise immediately or append one recoverable diagnostic.
+
+        Args:
+            error: Structured diagnostic to report.
+            errors: ``None`` for fail-fast mode or a list for collect mode.
+
+        Returns:
+            Internal invalid sentinel when the error is collected.
+
+        Raises:
+            BDDTableError: In fail-fast mode.
+
+        !!! info
+            Returning a sentinel lets parsing continue safely while skipping
+            only the invalid value or record.
+
+        """
         if errors is None:
             raise error
         errors.append(error)
@@ -557,7 +926,19 @@ class BaseTable(TableRecord, TableFields):
 
     @staticmethod
     def _raise_collected(errors: list[BDDTableError] | None) -> None:
-        """Raise the public aggregate after all safe validation has run."""
+        """Raise the public aggregate after all safe validation has run.
+
+        Args:
+            errors: Optional collected diagnostic list.
+
+        Raises:
+            BDDTableErrors: If ``errors`` contains one or more diagnostics.
+
+        !!! warning
+            Dependent lifecycle stages stop after collected structural errors
+            so users do not receive noisy secondary failures.
+
+        """
         if errors:
             raise BDDTableErrors(errors)
 
@@ -567,7 +948,25 @@ class BaseTable(TableRecord, TableFields):
         datatable: RawTable | TableData,
         parse_context: ParseContext,
     ) -> TableData:
-        """Create source cells, run transformation, and validate its contract."""
+        """Create source cells, run transformation, and validate its contract.
+
+        Args:
+            datatable: Raw rows or already source-aware table.
+            parse_context: Parse context for the current operation.
+
+        Returns:
+            Transformed source-aware table.
+
+        Raises:
+            BDDTableError: If raw or transformed tables are empty, the
+                transformer fails, or the transformer returns a non-TableData
+                value.
+
+        !!! info
+            Both the source and transformed table are checked for minimum shape
+            so transformation cannot produce an unparsable empty table.
+
+        """
         source_table = TableData.ensure(datatable)
         cls._check_table(source_table)
 
@@ -594,6 +993,17 @@ class BaseTable(TableRecord, TableFields):
 
     @classmethod
     def _validate_schema_labels(cls) -> None:
+        """Validate canonical schema labels.
+
+        Raises:
+            BDDTableError: If two fields on the same schema declare the same
+                canonical label.
+
+        !!! warning
+            Alias collisions are rejected during class creation. This runtime
+            check protects variant classes and late decorator registration.
+
+        """
         labels: dict[str, str] = {}
         for name, declared in cls.__fields__.items():
             if declared.label in labels:
@@ -615,7 +1025,30 @@ class BaseTable(TableRecord, TableFields):
         item_id: Any | None,
         errors: list[BDDTableError] | None = None,
     ) -> Any:
-        """Resolve one declared field from a present or missing table cell."""
+        """Resolve one declared field from a present or missing cell.
+
+        Args:
+            declared: Field declaration being resolved.
+            present: Whether any canonical label or alias appeared.
+            cell: Source cell when the field is present.
+            parse_context: Parse context for the current operation.
+            item_id: Current record ID when available.
+            errors: Optional collection sink for recoverable diagnostics.
+
+        Returns:
+            Parsed/default field value, or the internal invalid sentinel when
+            collect mode records a failure.
+
+        Raises:
+            RuntimeError: If callers mark a field present without passing a
+                source cell.
+            BDDTableError: In fail-fast mode for missing/empty/parser failures.
+
+        !!! warning
+            Missing optional fields and explicit empty cells are distinct.
+            Defaults run only when the field label is absent.
+
+        """
         if not present:
             if declared.required:
                 return cls._report(
@@ -715,7 +1148,19 @@ class BaseTable(TableRecord, TableFields):
 
     @classmethod
     def _check_table(cls, table: TableData) -> None:
-        """Reject tables that cannot contain schema labels."""
+        """Reject tables that cannot contain schema labels.
+
+        Args:
+            table: Source-aware table to validate.
+
+        Raises:
+            BDDTableError: If the table or its label row/column is empty.
+
+        !!! info
+            Orientation-specific parsers perform rectangularity checks after
+            this minimum shape validation.
+
+        """
         if not table.rows:
             raise BDDTableError(
                 "Table is empty",
@@ -738,7 +1183,21 @@ class BaseTable(TableRecord, TableFields):
         label_cells: Sequence[TableCell],
         errors: list[BDDTableError] | None = None,
     ) -> None:
-        """Reject repeated table labels using their original source location."""
+        """Reject repeated table labels using original source locations.
+
+        Args:
+            label_cells: Cells containing labels for the active orientation.
+            errors: Optional collection sink for recoverable diagnostics.
+
+        Raises:
+            BDDTableError: In fail-fast mode when a duplicate is found.
+
+        !!! warning
+            Duplicate labels are rejected before field lookup because otherwise
+            the parser would have to choose between multiple source cells for
+            the same schema field.
+
+        """
         seen = set()
         for cell in label_cells:
             label = cell.value
@@ -758,6 +1217,19 @@ class BaseTable(TableRecord, TableFields):
 
     @classmethod
     def _validate_required_presence(cls, labels: Sequence[str]) -> None:
+        """Validate required fields when a table contains no records.
+
+        Args:
+            labels: Labels present in the table's label row or column.
+
+        Raises:
+            BDDTableError: If any required base-schema field is absent.
+
+        !!! info
+            Normal record parsing reports missing required fields per record.
+            This helper handles empty data tables where no record loop runs.
+
+        """
         present = set(labels)
         for declared in cls.__fields__.values():
             if declared.required and not present.intersection(declared.labels):
@@ -783,7 +1255,24 @@ class BaseTable(TableRecord, TableFields):
         item_id: Any | None = None,
         extras: Mapping[str, Any] | None = None,
     ) -> BaseTable:
-        """Construct one schema record with immutable source metadata."""
+        """Construct one schema record with immutable source metadata.
+
+        Args:
+            values: Parsed field values keyed by schema attribute name.
+            cells: Source cells keyed by schema attribute name.
+            row: Source row for row-oriented records.
+            column: Source ID column for column-oriented records.
+            item_id: Parsed record ID when available.
+            extras: Preserved unknown or inapplicable values.
+
+        Returns:
+            Populated schema record.
+
+        !!! info
+            Source metadata is attached before validation hooks run so custom
+            validators can raise source-aware diagnostics.
+
+        """
         source = RecordSource.create(
             item_id=item_id,
             row=row,
@@ -801,7 +1290,27 @@ class BaseTable(TableRecord, TableFields):
         *,
         convert_output: bool = True,
     ) -> list[Any]:
-        """Run validation and optional model conversion for parsed records."""
+        """Run reference resolution, validation, and output conversion.
+
+        Args:
+            records: Parsed schema records.
+            parse_context: Parse context for the current operation.
+            errors: Optional collection sink for recoverable diagnostics.
+            convert_output: Whether to call output builders.
+
+        Returns:
+            Schema records or converted output objects.
+
+        Raises:
+            BDDTableError: In fail-fast mode for reference, validation, or
+                output failures.
+            BDDTableErrors: In collect mode when diagnostics were collected.
+
+        !!! warning
+            Dependent lifecycle stages run only after structural parse errors
+            have been raised. This keeps collected diagnostics actionable.
+
+        """
         # Cross-record references and validators assume every parsed record is
         # structurally valid. Running them against a partial table would add
         # misleading secondary failures, so collect mode reports cell parsing
@@ -892,7 +1401,21 @@ class BaseTable(TableRecord, TableFields):
         records: list[BaseTable],
         parse_context: ParseContext,
     ) -> None:
-        """Resolve declared local references against records from this table."""
+        """Resolve declared local references against records from this table.
+
+        Args:
+            records: Parsed records from one table.
+            parse_context: Parse context for the current operation.
+
+        Raises:
+            BDDTableError: If reference targets are missing, duplicate, or
+                cannot be converted to the target key type.
+
+        !!! info
+            References are local to one parsed table. They do not query
+            external registries or previously parsed feature data.
+
+        """
         records_with_references = [
             record
             for record in records
@@ -985,7 +1508,28 @@ class BaseTable(TableRecord, TableFields):
         source_field: str,
         parse_context: ParseContext,
     ) -> Any:
-        """Apply the target field parser so typed IDs and references match."""
+        """Apply the target field parser so typed IDs and references match.
+
+        Args:
+            value: Raw reference key value.
+            target_field: Referenced field declaration.
+            source_record: Record containing the reference cell.
+            source_field: Name of the reference field on ``source_record``.
+            parse_context: Parse context for the current operation.
+
+        Returns:
+            Reference key converted with the target field parser, or the raw
+            key when the target field has no parser.
+
+        Raises:
+            BDDTableError: If target-key conversion fails.
+
+        !!! warning
+            The source cell for the reference field is used in diagnostics, not
+            the target field cell, because that is where the bad key was
+            written.
+
+        """
         if target_field.parser is None:
             return value
         source_cell = source_record.source_for(source_field)
@@ -1013,7 +1557,16 @@ class BaseTable(TableRecord, TableFields):
 
 
 class RowTable(BaseTable):
-    """Schema for tables whose first row contains labels and later rows items."""
+    """Parse tables whose first row contains labels and later rows are records.
+
+    !!! example
+        ```python
+        class UserTable(RowTable):
+            name = field("name", required=True)
+
+        users = UserTable.parse([["name"], ["Alice"]])
+        ```
+    """
 
     @classmethod
     def parse(
@@ -1023,7 +1576,22 @@ class RowTable(BaseTable):
         context: Mapping[str, Any] | ParseContext | None = None,
         error_mode: str = "first",
     ) -> list[Any]:
-        """Parse a row-oriented table into validated records or outputs."""
+        """Parse a row-oriented table into validated records or outputs.
+
+        Args:
+            datatable: Raw rows or source-aware ``TableData``.
+            context: Optional project data or existing parse context.
+            error_mode: ``"first"`` or ``"collect"``.
+
+        Returns:
+            Public output objects, including output-model conversion when
+            configured.
+
+        !!! info
+            The first row supplies labels. Each following row is parsed as one
+            record using those labels.
+
+        """
         return cls._parse_row_table(
             datatable,
             context=context,
@@ -1039,7 +1607,21 @@ class RowTable(BaseTable):
         context: Mapping[str, Any] | ParseContext | None = None,
         error_mode: str = "first",
     ) -> list[TableT]:
-        """Parse a row-oriented table and return schema record instances."""
+        """Parse a row-oriented table and return schema record instances.
+
+        Args:
+            datatable: Raw rows or source-aware ``TableData``.
+            context: Optional project data or existing parse context.
+            error_mode: ``"first"`` or ``"collect"``.
+
+        Returns:
+            Validated instances of the schema class.
+
+        !!! warning
+            Output-model conversion is skipped so callers can inspect record
+            source metadata and schema attributes directly.
+
+        """
         return cast(
             list[TableT],
             cast(Any, cls)._parse_row_table(
@@ -1059,7 +1641,29 @@ class RowTable(BaseTable):
         error_mode: str,
         convert_output: bool,
     ) -> list[Any]:
-        """Parse row-oriented records and optionally build output objects."""
+        """Parse row-oriented records and optionally build output objects.
+
+        Args:
+            datatable: Raw rows or source-aware ``TableData``.
+            context: Optional project data or existing parse context.
+            error_mode: ``"first"`` or ``"collect"``.
+            convert_output: Whether to run output builders after validation.
+
+        Returns:
+            Parsed records or converted output objects.
+
+        Raises:
+            BDDTableError: In fail-fast mode for structural, parsing, or
+                lifecycle failures.
+            BDDTableErrors: In collect mode when recoverable diagnostics were
+                collected.
+
+        !!! warning
+            Ragged rows are reported with the row's original source location,
+            then skipped in collect mode so independent rows can still be
+            checked.
+
+        """
         cls._validate_error_mode(error_mode)
         errors: list[BDDTableError] | None = [] if error_mode == "collect" else None
         parse_context = cls._parse_context(context)
@@ -1155,7 +1759,15 @@ class RowTable(BaseTable):
 
 
 class ColumnTable(BaseTable):
-    """Schema for tables whose first column contains labels and later columns items."""
+    """Parse tables whose first column contains labels and later columns are records.
+
+    !!! example
+        ```python
+        class ContentTable(ColumnTable):
+            id = id_field("IDs")
+            headline = field("Headline*", required=True)
+        ```
+    """
 
     @classmethod
     def parse(
@@ -1165,7 +1777,22 @@ class ColumnTable(BaseTable):
         context: Mapping[str, Any] | ParseContext | None = None,
         error_mode: str = "first",
     ) -> list[Any]:
-        """Parse a column-oriented table into validated records or outputs."""
+        """Parse a column-oriented table into validated records or outputs.
+
+        Args:
+            datatable: Raw rows or source-aware ``TableData``.
+            context: Optional project data or existing parse context.
+            error_mode: ``"first"`` or ``"collect"``.
+
+        Returns:
+            Public output objects, including output-model conversion when
+            configured.
+
+        !!! info
+            The first column supplies labels. Each following column is parsed
+            as one record.
+
+        """
         return cls._parse_column_table(
             datatable,
             context=context,
@@ -1181,7 +1808,21 @@ class ColumnTable(BaseTable):
         context: Mapping[str, Any] | ParseContext | None = None,
         error_mode: str = "first",
     ) -> list[TableT]:
-        """Parse a column-oriented table and return schema record instances."""
+        """Parse a column-oriented table and return schema record instances.
+
+        Args:
+            datatable: Raw rows or source-aware ``TableData``.
+            context: Optional project data or existing parse context.
+            error_mode: ``"first"`` or ``"collect"``.
+
+        Returns:
+            Validated instances of the schema class.
+
+        !!! warning
+            Output-model conversion is skipped so callers can inspect source
+            metadata, item IDs, and intermediate schema attributes directly.
+
+        """
         return cast(
             list[TableT],
             cast(Any, cls)._parse_column_table(
@@ -1201,7 +1842,27 @@ class ColumnTable(BaseTable):
         error_mode: str,
         convert_output: bool,
     ) -> list[Any]:
-        """Parse column-oriented records and optionally build output objects."""
+        """Parse column-oriented records and optionally build output objects.
+
+        Args:
+            datatable: Raw rows or source-aware ``TableData``.
+            context: Optional project data or existing parse context.
+            error_mode: ``"first"`` or ``"collect"``.
+            convert_output: Whether to run output builders after validation.
+
+        Returns:
+            Parsed records or converted output objects.
+
+        Raises:
+            BDDTableError: For structural, ID, parsing, or lifecycle failures.
+            BDDTableErrors: In collect mode when recoverable diagnostics were
+                collected.
+
+        !!! warning
+            ``ColumnTable`` requires exactly one ``id_field``. The first row's
+            first cell must use that field's label or alias.
+
+        """
         cls._validate_error_mode(error_mode)
         errors: list[BDDTableError] | None = [] if error_mode == "collect" else None
         parse_context = cls._parse_context(context)

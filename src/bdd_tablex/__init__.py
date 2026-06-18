@@ -1,4 +1,17 @@
-"""Public API for bdd-tablex."""
+"""Public API for bdd-tablex.
+
+The package exports the stable schema, parser, transformation, context,
+diagnostic, introspection, pytest, and CLI-checking helpers intended for normal
+project use. Implementation modules may expose additional names, but callers
+should treat exports from this module as the supported surface for the ``0.1``
+series.
+
+!!! info
+    Install optional extras only for integrations you use. Core schema parsing
+    has no runtime dependencies beyond the Python standard library.
+"""
+
+from importlib.metadata import PackageNotFoundError, version
 
 from .checker import (
     FeatureDiagnostic,
@@ -56,6 +69,11 @@ from .transformers import (
     compose_transformers,
 )
 
+try:
+    __version__ = version("bdd-tablex")
+except PackageNotFoundError:
+    __version__ = "0.1.0"
+
 __all__ = [
     "BDDTableError",
     "BDDTableErrorCode",
@@ -88,6 +106,7 @@ __all__ = [
     "VariantContract",
     "SchemaDefinitionError",
     "SuffixRepeat",
+    "__version__",
     "field",
     "boolean",
     "choice",

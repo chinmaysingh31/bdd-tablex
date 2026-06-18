@@ -1,4 +1,14 @@
-"""Schema field declarations."""
+"""Schema field declarations.
+
+Field declarations are descriptors collected by the schema metaclass. They
+describe how BDD table labels map to Python attributes, which values are
+required, and how raw cell text should be converted.
+
+!!! info
+    Labels are literal project vocabulary. ``bdd-tablex`` does not infer
+    meaning from characters such as ``*`` unless the schema explicitly sets
+    options such as ``required=True``.
+"""
 
 from __future__ import annotations
 
@@ -16,7 +26,18 @@ DefaultFactory = Callable[[DefaultContext], Any]
 
 @dataclass(frozen=True)
 class ReferenceSpec:
-    """Configuration for resolving local IDs to records in the same table."""
+    """Configure local ID resolution within the same parsed table.
+
+    Attributes:
+        target: Attribute name on the referenced record used as the lookup key.
+        many: Whether the source cell contains several references.
+        separator: Text separator used when ``many`` is true.
+
+    !!! info
+        Reference resolution happens after records are constructed and before
+        record/table validation hooks run.
+
+    """
 
     target: str
     many: bool
@@ -25,7 +46,30 @@ class ReferenceSpec:
 
 @dataclass
 class Field:
-    """One declared schema field and its conversion behavior."""
+    """Store one declared schema field and its conversion behavior.
+
+    Attributes:
+        label: Canonical BDD table label.
+        aliases: Alternate accepted labels for evolving feature vocabulary.
+        required: Whether the field must be present and non-empty.
+        default: Static value used when an optional field is absent.
+        default_factory: Context-aware factory used when an optional field is
+            absent.
+        parser: Optional callable used to convert non-empty cell values.
+        parse_empty: Whether explicit empty cells should still be sent to the
+            parser.
+        is_id: Whether this field identifies column-oriented records.
+        is_discriminator: Whether this field selects record variants.
+        variants: Declarative discriminator component mapping.
+        reference: Optional local-record reference configuration.
+        name: Python attribute name assigned by the schema class body.
+
+    !!! warning
+        ``Field`` instances are mutable during class creation because
+        ``__set_name__`` records their Python attribute name. Schema
+        inheritance uses ``clone()`` to avoid sharing that mutable state.
+
+    """
 
     label: str
     aliases: tuple[str, ...] = ()
@@ -41,7 +85,17 @@ class Field:
     name: str = ""
 
     def clone(self) -> Field:
-        """Return an independent declaration for schema inheritance."""
+        """Return an independent declaration for schema inheritance.
+
+        Returns:
+            A new ``Field`` with the same declaration options.
+
+        !!! info
+            Schema subclasses receive cloned fields so changing an inferred
+            parser or descriptor name on one schema does not mutate its base
+            schema's declaration.
+
+        """
         return Field(
             label=self.label,
             aliases=self.aliases,
@@ -58,19 +112,67 @@ class Field:
         )
 
     def __set_name__(self, owner: type, name: str) -> None:
+        """Record the Python attribute name assigned by a schema class.
+
+        Args:
+            owner: Schema class receiving the descriptor.
+            name: Attribute name used in the class body.
+
+        !!! info
+            The table label and the Python attribute name are intentionally
+            separate so feature files can use human-facing language while code
+            keeps normal Python identifiers.
+
+        """
         self.name = name
 
     def __get__(self, instance: object | None, owner: type | None = None) -> Any:
+        """Return the declaration on classes or parsed value on records.
+
+        Args:
+            instance: Parsed record instance, or ``None`` during class access.
+            owner: Owning schema class.
+
+        Returns:
+            The ``Field`` declaration when accessed on a class, otherwise the
+            parsed attribute value stored on the record.
+
+        !!! warning
+            Parsed records are created through the schema lifecycle. Accessing
+            a descriptor-backed attribute before construction populates the
+            instance dictionary will raise ``KeyError``.
+
+        """
         if instance is None:
             return self
         return instance.__dict__[self.name]
 
     def __set__(self, instance: object, value: Any) -> None:
+        """Store a parsed value on a record instance.
+
+        Args:
+            instance: Parsed record object being populated.
+            value: Parsed field value.
+
+        !!! info
+            Assignment is intentionally direct. Validation and conversion have
+            already happened before values are attached to records.
+
+        """
         instance.__dict__[self.name] = value
 
     @property
     def labels(self) -> tuple[str, ...]:
-        """Return the canonical label followed by accepted aliases."""
+        """Return the canonical label followed by accepted aliases.
+
+        Returns:
+            Tuple used during label matching and duplicate-label validation.
+
+        !!! info
+            Canonical label order is preserved so introspection can present the
+            preferred table vocabulary first.
+
+        """
         return (self.label, *self.aliases)
 
 
@@ -82,7 +184,27 @@ def _validate_field_options(
     default: Any,
     default_factory: DefaultFactory | object,
 ) -> tuple[str, ...]:
-    """Validate declaration options shared by all field constructors."""
+    """Validate declaration options shared by field constructors.
+
+    Args:
+        label: Canonical table label.
+        aliases: Alternate accepted labels.
+        required: Whether a value is required.
+        default: Static default value or ``MISSING``.
+        default_factory: Context-aware default factory or ``MISSING``.
+
+    Returns:
+        Aliases normalized to a tuple.
+
+    Raises:
+        ValueError: If labels/defaults are internally contradictory.
+        TypeError: If ``default_factory`` is present but not callable.
+
+    !!! warning
+        Required fields cannot declare defaults because that would make missing
+        table data appear valid.
+
+    """
     if not label:
         raise ValueError("field label cannot be empty")
     normalized = tuple(aliases)
@@ -113,6 +235,25 @@ def field(
     Parsers normally do not receive explicit empty cells, preserving the
     package distinction between an empty cell and a missing field. Parser
     objects may opt into empty-cell handling by exposing ``parse_empty=True``.
+
+    Args:
+        label: Canonical BDD table label.
+        required: Whether the field must be present and non-empty.
+        default: Static value used when the entire field is absent.
+        default_factory: Factory called for an absent optional field.
+        parser: Optional parser for non-empty values.
+        aliases: Alternate accepted table labels.
+
+    Returns:
+        A descriptor collected by ``RowTable`` or ``ColumnTable`` subclasses.
+
+    !!! example
+        ```python
+        class UserTable(RowTable):
+            name = field("name", required=True)
+            role = field("role", default="viewer", aliases=("type",))
+        ```
+
     """
     normalized_aliases = _validate_field_options(
         label,
@@ -138,7 +279,21 @@ def id_field(
     parser: Parser | None = None,
     aliases: Sequence[str] = (),
 ) -> Any:
-    """Declare the item identifier row for a column-oriented table."""
+    """Declare the item identifier row for a column-oriented table.
+
+    Args:
+        label: Canonical ID row label.
+        parser: Optional parser for ID values.
+        aliases: Alternate accepted ID row labels.
+
+    Returns:
+        A required identifier ``Field`` descriptor.
+
+    !!! warning
+        A column-oriented table can declare only one ID field. The schema
+        lifecycle uses it to attach item IDs and resolve local references.
+
+    """
     normalized_aliases = _validate_field_options(
         label,
         aliases,
@@ -161,7 +316,7 @@ def discriminator_field(
     parser: Parser | None = None,
     aliases: Sequence[str] = (),
 ) -> Any:
-    """Declare the field used to select a registered record variant.
+    """Declare the field used to select registered record variants.
 
     A discriminator is always required because the parser cannot choose a
     variant without it. The optional parser runs before variant lookup, so a
@@ -169,6 +324,21 @@ def discriminator_field(
 
     Declaring this field does not enable variants by itself. Register variant
     schema subclasses with ``@BaseSchema.variant(value)``.
+
+    Args:
+        label: Canonical discriminator label.
+        parser: Optional parser that runs before variant lookup.
+        aliases: Alternate accepted labels.
+
+    Returns:
+        A required discriminator ``Field`` descriptor.
+
+    !!! example
+        ```python
+        class ContentTable(ColumnTable):
+            content_type = discriminator_field("Type*")
+        ```
+
     """
     normalized_aliases = _validate_field_options(
         label,
@@ -193,7 +363,7 @@ def discriminator(
     parser: Parser | None = None,
     aliases: Sequence[str] = (),
 ) -> Any:
-    """Declare a discriminator and its variant field components together.
+    """Declare a discriminator and variant field components together.
 
     ``variants`` maps parsed discriminator values to ``TableFields``
     subclasses. When the containing table schema is created, bdd-tablex
@@ -203,6 +373,29 @@ def discriminator(
     This is the concise alternative to ``discriminator_field()`` plus
     ``@Table.variant(value)`` classes. The explicit decorator form remains
     useful when a project prefers named variant schema classes.
+
+    Args:
+        label: Canonical discriminator label.
+        variants: Mapping from parsed discriminator values to ``TableFields``
+            component classes.
+        parser: Optional parser that runs before variant lookup.
+        aliases: Alternate accepted labels.
+
+    Returns:
+        A required discriminator ``Field`` descriptor with variant metadata.
+
+    Raises:
+        TypeError: If ``variants`` is not a mapping.
+        ValueError: If ``variants`` is empty.
+
+    !!! example
+        ```python
+        content_type = discriminator(
+            "Type*",
+            variants={"Article": ArticleFields, "Poll": PollFields},
+        )
+        ```
+
     """
     if not isinstance(variants, Mapping):
         raise TypeError("discriminator variants must be a mapping")
@@ -240,6 +433,27 @@ def reference(
     The raw cell contains one target value, or a separator-delimited list when
     ``many=True``. Resolution occurs after all records are constructed and
     before validation hooks run.
+
+    Args:
+        label: Canonical table label containing reference keys.
+        target: Attribute on records used as the lookup key.
+        many: Whether the cell contains several keys.
+        separator: Separator used when ``many`` is true.
+        required: Whether the reference cell must be present and non-empty.
+        default: Static value used when an optional reference field is absent.
+        aliases: Alternate accepted table labels.
+
+    Returns:
+        A ``Field`` descriptor whose parsed value is resolved to record
+        objects.
+
+    Raises:
+        ValueError: If ``many=True`` and ``separator`` is empty.
+
+    !!! warning
+        Reference keys are parsed with the target field's parser before lookup.
+        Keep separators distinct from valid key text when using ``many=True``.
+
     """
     if many and not separator:
         raise ValueError("reference separator cannot be empty")

@@ -3,6 +3,11 @@
 The Gherkin dependency is imported lazily so normal runtime parsing remains
 dependency-free. Install the ``cli`` extra when using feature-file discovery
 or the ``bdd-tablex check`` command.
+
+!!! info
+    Static checking still runs schema parsers and validators. Supply
+    deterministic dependencies through parse context when project validators
+    normally depend on services or generators.
 """
 
 from __future__ import annotations
@@ -19,7 +24,20 @@ from .table import TableCell, TableData
 
 @dataclass(frozen=True)
 class FeatureTable:
-    """One Gherkin step data table and its surrounding source identity."""
+    """One discovered Gherkin step data table.
+
+    Attributes:
+        path: Feature file path.
+        feature: Feature name.
+        scenario: Scenario or background name.
+        step: Step text that owns the data table.
+        table: Source-aware table converted from Gherkin AST cells.
+
+    !!! info
+        The stored ``TableData`` uses feature-file line and column coordinates,
+        not indexes relative to the data table block.
+
+    """
 
     path: Path
     feature: str
@@ -30,7 +48,20 @@ class FeatureTable:
 
 @dataclass(frozen=True)
 class FeatureDiagnostic:
-    """One schema diagnostic associated with a feature file and step."""
+    """One schema diagnostic associated with a feature file and step.
+
+    Attributes:
+        path: Feature file path.
+        feature: Feature name.
+        scenario: Scenario or background name.
+        step: Step text that owns the failing data table.
+        error: Structured table error raised by schema parsing.
+
+    !!! info
+        CLI JSON output is a rendering of this object plus the nested
+        ``BDDTableError`` attributes.
+
+    """
 
     path: Path
     feature: str
@@ -40,7 +71,19 @@ class FeatureDiagnostic:
 
 
 def _gherkin_parser() -> Any:
-    """Load the optional official Gherkin parser with an actionable message."""
+    """Load the optional official Gherkin parser.
+
+    Returns:
+        The Gherkin ``Parser`` class.
+
+    Raises:
+        RuntimeError: If the optional ``cli`` dependency is not installed.
+
+    !!! warning
+        This dependency is intentionally lazy so core table parsing has no
+        runtime dependency on Gherkin parsing packages.
+
+    """
     try:
         from gherkin.parser import Parser  # type: ignore[import-untyped]
     except ImportError as exc:
@@ -51,7 +94,19 @@ def _gherkin_parser() -> Any:
 
 
 def _table_data(data_table: Mapping[str, Any]) -> TableData:
-    """Convert Gherkin AST cells while preserving feature-file coordinates."""
+    """Convert a Gherkin AST data table into ``TableData``.
+
+    Args:
+        data_table: Gherkin AST mapping containing rows, cells, and locations.
+
+    Returns:
+        Source-aware ``TableData`` with feature-file coordinates.
+
+    !!! info
+        Coordinates come from the official parser's cell locations, so errors
+        point to the feature file rather than to a normalized table index.
+
+    """
     rows = []
     for row in data_table["rows"]:
         cells = []
@@ -70,7 +125,19 @@ def _table_data(data_table: Mapping[str, Any]) -> TableData:
 
 
 def _scenario_nodes(feature: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-    """Yield scenarios and backgrounds, including scenarios nested in rules."""
+    """Yield scenarios and backgrounds from a Gherkin feature node.
+
+    Args:
+        feature: Parsed Gherkin feature mapping.
+
+    Yields:
+        Scenario or background mappings, including nodes nested inside rules.
+
+    !!! warning
+        Scenario-outline example expansion is not performed here. Static table
+        checking inspects the table text present in the feature AST.
+
+    """
     for child in feature.get("children", []):
         if "scenario" in child:
             yield child["scenario"]
@@ -86,7 +153,25 @@ def discover_feature_tables(
     step: str | None = None,
     scenario: str | None = None,
 ) -> list[FeatureTable]:
-    """Return matching data tables parsed by the official Gherkin parser."""
+    """Return matching feature-file data tables.
+
+    Args:
+        path: Feature file path.
+        step: Optional exact step text filter.
+        scenario: Optional exact scenario/background name filter.
+
+    Returns:
+        Matching ``FeatureTable`` objects.
+
+    Raises:
+        RuntimeError: If the optional Gherkin dependency is unavailable.
+
+    !!! example
+        ```python
+        tables = discover_feature_tables("users.feature", step="the users:")
+        ```
+
+    """
     source_path = Path(path)
     Parser = _gherkin_parser()
     document = Parser().parse(source_path.read_text(encoding="utf-8"))
@@ -129,6 +214,21 @@ def check_feature(
     Custom parsers and validators still run. Projects whose schemas require
     services should supply deterministic checking dependencies through
     ``context`` or through the CLI's context-factory option.
+
+    Args:
+        path: Feature file path.
+        schema: Schema used to parse matching data tables.
+        step: Optional exact step text filter.
+        scenario: Optional exact scenario/background name filter.
+        context: Optional project data passed to schema parsing.
+
+    Returns:
+        Structured diagnostics for every matching table failure.
+
+    !!! warning
+        Custom validation code executes during checking. Keep context factories
+        deterministic and free of external side effects in CI/editor workflows.
+
     """
     diagnostics: list[FeatureDiagnostic] = []
     for discovered in discover_feature_tables(path, step=step, scenario=scenario):

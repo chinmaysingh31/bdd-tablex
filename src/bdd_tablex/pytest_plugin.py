@@ -1,4 +1,13 @@
-"""Small pytest integration for bdd-tablex."""
+"""Pytest integration for bdd-tablex.
+
+Installing the package registers a ``bdd_table`` fixture. The fixture is a
+small facade around schema classmethods, useful when pytest dependency
+injection keeps BDD step functions cleaner.
+
+!!! info
+    Direct schema parsing remains independent from pytest. This plugin adds
+    convenience only; it does not create a separate table lifecycle.
+"""
 
 from __future__ import annotations
 
@@ -19,6 +28,12 @@ class BDDTableParser:
 
     This facade intentionally delegates to the schema class. It does not own
     a second parser, registry, or pytest-specific table lifecycle.
+
+    !!! example
+        ```python
+        def step(datatable, bdd_table):
+            users = bdd_table.parse(datatable, schema=UserTable)
+        ```
     """
 
     def parse(
@@ -29,7 +44,22 @@ class BDDTableParser:
         context: Mapping[str, Any] | ParseContext | None = None,
         error_mode: str = "first",
     ) -> list[Any]:
-        """Parse a raw or source-aware table with the requested schema."""
+        """Parse a table with the requested schema.
+
+        Args:
+            datatable: Raw pytest-bdd table or source-aware ``TableData``.
+            schema: Concrete ``RowTable`` or ``ColumnTable`` subclass.
+            context: Optional project data or existing parse context.
+            error_mode: ``"first"`` or ``"collect"``.
+
+        Returns:
+            Public parse results, including output-model conversion when the
+            schema configures one.
+
+        !!! info
+            This method delegates directly to ``schema.parse``.
+
+        """
         return schema.parse(datatable, context=context, error_mode=error_mode)
 
     def parse_records(
@@ -45,11 +75,34 @@ class BDDTableParser:
         This mirrors ``schema.parse_records(...)`` for pytest and pytest-bdd
         steps that want type-checker-friendly schema instances instead of
         optional output-model conversion.
+
+        Args:
+            datatable: Raw pytest-bdd table or source-aware ``TableData``.
+            schema: Concrete ``RowTable`` or ``ColumnTable`` subclass.
+            context: Optional project data or existing parse context.
+            error_mode: ``"first"`` or ``"collect"``.
+
+        Returns:
+            Validated instances of ``schema``.
+
+        !!! warning
+            This bypasses output-model conversion by design. Use ``parse`` when
+            the step should operate on the schema's public output objects.
+
         """
         return schema.parse_records(datatable, context=context, error_mode=error_mode)
 
 
 @pytest.fixture
 def bdd_table() -> BDDTableParser:
-    """Provide the small schema parsing facade to pytest and pytest-bdd tests."""
+    """Provide the schema parsing facade to pytest tests.
+
+    Returns:
+        A new ``BDDTableParser`` facade.
+
+    !!! info
+        The facade is stateless, so creating one per fixture request is cheap
+        and avoids hidden state between tests.
+
+    """
     return BDDTableParser()

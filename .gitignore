@@ -3,6 +3,7 @@
 .uv-cache/
 .uv-python/
 .venv/
+.runner-debug/
 __pycache__/
 *.py[cod]
 dist/

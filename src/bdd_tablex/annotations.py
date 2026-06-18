@@ -1,4 +1,13 @@
-"""Parser inference for supported Python type annotations."""
+"""Infer field parsers from supported Python type annotations.
+
+This module keeps annotation handling intentionally conservative. It only
+infers parsers for types with obvious, local conversion semantics and returns
+``None`` for annotations that should remain raw text.
+
+!!! info
+    Explicit ``field(parser=...)`` values always win. Annotation inference is
+    a convenience for common schema declarations, not a second parser registry.
+"""
 
 from __future__ import annotations
 
@@ -12,12 +21,33 @@ from .parsers import boolean, compose, decimal, each, floating, integer, optiona
 
 
 def parser_for_annotation(annotation: Any) -> Parser | None:
-    """Return a parser for one supported annotation or ``None`` for raw text.
+    """Return a parser for one supported annotation.
 
-    Supported annotations are ``str``, ``int``, ``float``, ``bool``,
-    ``Decimal``, enums, ``Literal`` strings, ``list[T]``, and an optional form
-    containing exactly one non-``None`` type. Explicit field parsers always
-    take precedence over inference.
+    Args:
+        annotation: The runtime annotation object gathered from a schema
+            attribute, usually through ``typing.get_type_hints``.
+
+    Returns:
+        A parser compatible with ``field(parser=...)`` when the annotation is
+        supported, or ``None`` when the value should be left as the raw string.
+
+    !!! info
+        Supported annotations are ``str``, ``int``, ``float``, ``bool``,
+        ``Decimal``, enums, string ``Literal`` values, ``list[T]``, and
+        optional unions containing exactly one non-``None`` type.
+
+    !!! warning
+        Unsupported unions deliberately return ``None``. This prevents
+        ambiguous coercion when more than one non-null type could accept the
+        same cell text.
+
+    !!! example
+        ```python
+        class UserTable(RowTable):
+            age: int = field("age")
+            tags: list[str] = field("tags")
+        ```
+
     """
     if annotation in (Any, str):
         return None
@@ -51,6 +81,26 @@ def parser_for_annotation(annotation: Any) -> Parser | None:
         allowed = tuple(arguments)
 
         def parse_literal(value: Any, context: Any) -> str:
+            """Validate that a cell exactly matches one literal string.
+
+            Args:
+                value: Current logical cell value after table transformation.
+                context: Parser context supplied by the schema lifecycle.
+
+            Returns:
+                The original string value when it is one of the allowed
+                literals.
+
+            Raises:
+                ValueError: If the cell value is not registered in the
+                    annotation's literal set.
+
+            !!! warning
+                Literal parsing is intentionally exact and does not normalize
+                whitespace or case. Add an explicit parser when a project wants
+                looser matching.
+
+            """
             if value not in allowed:
                 raise ValueError(f"Expected one of {list(allowed)!r}")
             return value
@@ -60,13 +110,57 @@ def parser_for_annotation(annotation: Any) -> Parser | None:
 
 
 def _identity(value: Any, context: Any) -> Any:
+    """Return ``value`` unchanged for composed inferred parsers.
+
+    Args:
+        value: Current parser input.
+        context: Parser context supplied by the schema lifecycle.
+
+    Returns:
+        The same object received as ``value``.
+
+    !!! info
+        This helper is used inside inferred ``Optional`` and ``list`` parsers
+        when the inner annotation means "keep this value as-is".
+
+    """
     return value
 
 
 def _enum_parser(enum_type: type[Enum]) -> Parser:
-    """Match enum values first, then member names."""
+    """Return a parser that matches enum values before member names.
+
+    Args:
+        enum_type: Enum subclass used by a schema field annotation.
+
+    Returns:
+        A parser that converts cell text into a member of ``enum_type``.
+
+    !!! info
+        Matching enum values first lets feature files use domain-facing values
+        while still accepting member names for tests that prefer Python
+        identifiers.
+
+    """
 
     def parse(value: Any, context: Any) -> Enum:
+        """Convert one cell value into an enum member.
+
+        Args:
+            value: Current logical cell value after table transformation.
+            context: Parser context supplied by the schema lifecycle.
+
+        Returns:
+            The enum member whose value or name matches the cell text.
+
+        Raises:
+            ValueError: If no enum member matches the cell text.
+
+        !!! warning
+            Matching is string-based. Use an explicit parser when enum values
+            need locale-aware, case-insensitive, or numeric normalization.
+
+        """
         raw = str(value)
         for member in enum_type:
             if str(member.value) == raw or member.name == raw:

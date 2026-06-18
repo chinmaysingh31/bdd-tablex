@@ -1,6 +1,13 @@
 """Static-typing smoke sample for the documented public API."""
 
-from bdd_tablex import RowTable, TableContract, field, parse_table, parse_table_records
+from bdd_tablex import (
+    RowTable,
+    TableContract,
+    __version__,
+    field,
+    parse_table,
+    parse_table_records,
+)
 
 
 class UserTable(RowTable):
@@ -19,5 +26,6 @@ functional_records: list[UserTable] = parse_table_records(
     UserTable,
     [["name", "age"], ["Alice", "30"]],
 )
+version_text: str = __version__
 name: str = records[0].name
 functional_name: str = functional_records[0].name

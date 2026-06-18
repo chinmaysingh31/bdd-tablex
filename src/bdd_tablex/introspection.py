@@ -1,4 +1,13 @@
-"""Immutable, machine-readable descriptions of table schema contracts."""
+"""Immutable, machine-readable descriptions of table schema contracts.
+
+The objects in this module are returned by ``Table.describe()`` and power the
+``bdd-tablex describe`` command. They intentionally contain only serializable
+or easily renderable metadata.
+
+!!! info
+    Contracts describe schema shape and configured hooks. They do not parse a
+    table or execute project validators.
+"""
 
 from __future__ import annotations
 
@@ -9,7 +18,19 @@ from .fields import MISSING, Field
 
 
 def _callable_name(value: Any) -> str | None:
-    """Return a stable best-effort name for a configured callable or object."""
+    """Return a best-effort display name for a callable or object.
+
+    Args:
+        value: Callable, object, ``None``, or ``MISSING`` sentinel.
+
+    Returns:
+        ``None`` for absent values, otherwise a qualified/name/type fallback.
+
+    !!! info
+        The result is for diagnostics and schema descriptions, not for
+        re-importing the callable.
+
+    """
     if value is None or value is MISSING:
         return None
     return getattr(
@@ -19,7 +40,26 @@ def _callable_name(value: Any) -> str | None:
 
 @dataclass(frozen=True)
 class FieldContract:
-    """Public description of one declared schema field."""
+    """Public description of one declared schema field.
+
+    Attributes:
+        name: Python schema attribute name.
+        label: Canonical BDD table label.
+        aliases: Alternate accepted labels.
+        required: Whether the field is required.
+        is_id: Whether the field identifies column-oriented records.
+        is_discriminator: Whether the field selects variants.
+        has_default: Whether a static or factory default is configured.
+        default_repr: ``repr`` of a static default when present.
+        default_factory: Display name of the default factory when present.
+        parser: Display name of the parser when present.
+        reference_target: Referenced field name when this is a reference.
+        reference_many: Whether the reference contains multiple keys.
+
+    !!! info
+        The contract is frozen so tools can cache it safely.
+
+    """
 
     name: str
     label: str
@@ -36,7 +76,20 @@ class FieldContract:
 
     @classmethod
     def from_field(cls, name: str, declared: Field) -> FieldContract:
-        """Build an immutable contract from one internal field declaration."""
+        """Build an immutable contract from one field declaration.
+
+        Args:
+            name: Python schema attribute name.
+            declared: Internal ``Field`` declaration.
+
+        Returns:
+            A ``FieldContract`` suitable for JSON conversion.
+
+        !!! warning
+            Defaults are represented with ``repr`` rather than copied as live
+            objects, because contracts are descriptive metadata.
+
+        """
         reference = declared.reference
         return cls(
             name=name,
@@ -61,7 +114,20 @@ class FieldContract:
 
 @dataclass(frozen=True)
 class VariantContract:
-    """Description of one discriminator value and selected schema contract."""
+    """Description of one discriminator value and selected schema.
+
+    Attributes:
+        value: Parsed discriminator value that selects the variant.
+        schema_name: Display name of the concrete variant schema.
+        fields: Field contracts active for that variant.
+        output_model: Display name of the variant output model, if any.
+        output_builder: Display name of the output builder hook.
+
+    !!! info
+        Generated variant class names may change, so tooling should present
+        ``schema_name`` and use ``variant_for()`` for runtime lookup.
+
+    """
 
     value: Any
     schema_name: str
@@ -72,7 +138,26 @@ class VariantContract:
 
 @dataclass(frozen=True)
 class TableContract:
-    """Complete public description returned by ``Table.describe()``."""
+    """Complete public description returned by ``Table.describe()``.
+
+    Attributes:
+        schema_name: Display name of the described schema.
+        orientation: ``"row"`` or ``"column"``.
+        fields: Base schema field contracts.
+        variants: Discriminator variant contracts.
+        unknown_fields: Policy for undeclared table labels.
+        inapplicable_fields: Policy for values belonging to other variants.
+        transformer: Display name of configured table transformer.
+        output_model: Display name of configured output model.
+        output_builder: Display name of the output builder hook.
+
+    !!! example
+        ```python
+        contract = UserTable.describe()
+        assert contract.orientation == "row"
+        ```
+
+    """
 
     schema_name: str
     orientation: str
@@ -85,12 +170,34 @@ class TableContract:
     output_builder: str
 
     def as_dict(self) -> dict[str, Any]:
-        """Return a recursively structured dictionary for tooling and JSON."""
+        """Return a recursively structured dictionary.
+
+        Returns:
+            Dictionary containing only standard container values.
+
+        !!! info
+            CLI JSON output delegates to this method so editor integrations and
+            CI scripts receive the same shape as Python callers.
+
+        """
         return asdict(self)
 
 
 def describe_schema(schema: Any) -> TableContract:
-    """Inspect one table schema without parsing a feature table."""
+    """Inspect one table schema without parsing a feature table.
+
+    Args:
+        schema: ``RowTable`` or ``ColumnTable`` subclass to describe.
+
+    Returns:
+        A frozen ``TableContract`` containing fields, variants, policies, and
+        configured hook names.
+
+    !!! warning
+        This function trusts that ``schema`` has already been created by the
+        bdd-tablex metaclass. Use ``Table.describe()`` for the public API.
+
+    """
     orientation = (
         "column"
         if any(base.__name__ == "ColumnTable" for base in schema.mro())

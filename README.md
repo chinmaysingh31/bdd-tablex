@@ -9,6 +9,26 @@ It does not prescribe a table DSL or perform business actions. Projects may
 select reusable syntax rules, provide their own rule objects, or implement a
 fully custom table transformation.
 
+## Installation
+
+`bdd-tablex` supports Python 3.10 and newer. The core package has no runtime
+dependencies:
+
+```bash
+pip install bdd-tablex
+```
+
+Install optional extras only for integrations you use:
+
+```bash
+pip install "bdd-tablex[cli]"       # static Gherkin feature-file checks
+pip install "bdd-tablex[pydantic]"  # Pydantic output models
+pip install "bdd-tablex[test]"      # pytest and pytest-bdd test helpers
+```
+
+The command-line tool is available as both `bdd-tablex` and
+`python -m bdd_tablex`.
+
 ## Row-oriented tables
 
 ```python

@@ -1,4 +1,13 @@
-"""Command-line interface for static BDD table validation."""
+"""Command-line interface for static BDD table validation.
+
+The CLI exposes two operations: ``check`` validates Gherkin data tables against
+a schema without executing pytest scenarios, and ``describe`` renders a schema
+contract for humans or tools.
+
+!!! info
+    The public console script and ``python -m bdd_tablex`` both delegate to
+    ``main()`` in this module.
+"""
 
 from __future__ import annotations
 
@@ -16,7 +25,24 @@ from .schema import BaseTable
 
 
 def _import_object(reference: str) -> Any:
-    """Import ``module:attribute`` or ``path.py:attribute`` references."""
+    """Import a ``module:attribute`` or ``path.py:attribute`` reference.
+
+    Args:
+        reference: Import reference supplied by the CLI user.
+
+    Returns:
+        The referenced Python object.
+
+    Raises:
+        ValueError: If the reference does not use ``module:attribute`` syntax.
+        ImportError: If a referenced Python file cannot be imported.
+        AttributeError: If the attribute path cannot be resolved.
+
+    !!! warning
+        File references are imported under generated module names. They are
+        intended for CLI loading, not for establishing stable import names.
+
+    """
     try:
         module_name, attribute_path = reference.rsplit(":", 1)
     except ValueError as exc:
@@ -42,7 +68,23 @@ def _import_object(reference: str) -> Any:
 
 
 def _schema(reference: str) -> type[BaseTable]:
-    """Load and validate a table schema import reference."""
+    """Load and validate a table schema import reference.
+
+    Args:
+        reference: ``module:Schema`` or ``path.py:Schema`` reference.
+
+    Returns:
+        A concrete bdd-tablex schema class.
+
+    Raises:
+        TypeError: If the reference does not resolve to a ``BaseTable``
+            subclass.
+
+    !!! info
+        Validation happens before command execution so user-facing errors point
+        at import configuration rather than producing partial output.
+
+    """
     value = _import_object(reference)
     if not isinstance(value, type) or not issubclass(value, BaseTable):
         raise TypeError(f"{reference!r} is not a bdd-tablex schema")
@@ -50,7 +92,23 @@ def _schema(reference: str) -> type[BaseTable]:
 
 
 def _context(reference: str | None) -> Mapping[str, Any] | None:
-    """Call an optional zero-argument project context factory."""
+    """Call an optional zero-argument project context factory.
+
+    Args:
+        reference: Optional import reference to a callable.
+
+    Returns:
+        ``None`` or the mapping returned by the project factory.
+
+    Raises:
+        TypeError: If the reference is not callable or does not return a
+            mapping.
+
+    !!! warning
+        The factory is executed by static checking. It should be deterministic
+        and avoid external side effects.
+
+    """
     if reference is None:
         return None
     factory = _import_object(reference)
@@ -63,12 +121,37 @@ def _context(reference: str | None) -> Mapping[str, Any] | None:
 
 
 def _json_default(value: Any) -> str:
-    """Return a readable JSON fallback for project-owned Python values."""
+    """Return a readable JSON fallback for project-owned values.
+
+    Args:
+        value: Object that ``json.dumps`` does not know how to encode.
+
+    Returns:
+        ``repr(value)`` for deterministic diagnostic output.
+
+    !!! info
+        Discriminator values and defaults can be project-owned objects, so JSON
+        output needs a stable fallback rather than failing serialization.
+
+    """
     return repr(value)
 
 
 def _diagnostic_payload(diagnostic: FeatureDiagnostic) -> dict[str, Any]:
-    """Convert one feature diagnostic to a stable CLI JSON object."""
+    """Convert one feature diagnostic to a stable CLI JSON object.
+
+    Args:
+        diagnostic: Feature diagnostic produced by static checking.
+
+    Returns:
+        Dictionary containing file identity, scenario identity, and structured
+        table error attributes.
+
+    !!! info
+        The shape is intentionally flat so CI systems and editor integrations
+        can consume diagnostics without understanding Python exception objects.
+
+    """
     error = diagnostic.error
     return {
         "path": str(diagnostic.path),
@@ -88,12 +171,33 @@ def _diagnostic_payload(diagnostic: FeatureDiagnostic) -> dict[str, Any]:
 
 
 def _print_json(payload: Mapping[str, Any]) -> None:
-    """Print JSON with deterministic ordering for CI and editor tooling."""
+    """Print JSON with deterministic ordering.
+
+    Args:
+        payload: JSON-compatible mapping to render.
+
+    !!! info
+        Sorted keys make CLI output easier to snapshot in tests and compare in
+        automation logs.
+
+    """
     print(json.dumps(payload, indent=2, sort_keys=True, default=_json_default))
 
 
 def _render_describe_text(schema: type[BaseTable]) -> str:
-    """Return a compact human-readable schema contract."""
+    """Return a compact human-readable schema contract.
+
+    Args:
+        schema: Schema class to describe.
+
+    Returns:
+        Multi-line text containing orientation, policies, fields, and variants.
+
+    !!! info
+        JSON output uses ``schema.describe().as_dict()``. This renderer is
+        optimized for quick terminal inspection.
+
+    """
     contract = schema.describe()
     lines = [
         f"Schema: {contract.schema_name}",
@@ -137,7 +241,18 @@ def _render_describe_text(schema: type[BaseTable]) -> str:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Create the public argument parser for embedding and unit testing."""
+    """Create the public argument parser.
+
+    Returns:
+        Configured ``argparse.ArgumentParser`` for CLI commands.
+
+    !!! example
+        ```python
+        parser = build_parser()
+        args = parser.parse_args(["describe", "pkg:Schema"])
+        ```
+
+    """
     parser = argparse.ArgumentParser(prog="bdd-tablex")
     subparsers = parser.add_subparsers(dest="command", required=True)
     check = subparsers.add_parser(
@@ -173,7 +288,23 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Run the CLI and return a conventional process exit code."""
+    """Run the CLI and return a conventional process exit code.
+
+    Args:
+        argv: Optional argument sequence. ``None`` reads process arguments.
+
+    Returns:
+        ``0`` for success, ``1`` for validation failures, or ``2`` when filters
+        match no tables.
+
+    Raises:
+        SystemExit: Through ``argparse`` when arguments or imports are invalid.
+
+    !!! warning
+        ``check`` parses matching tables and runs project parsers/validators.
+        Use ``--context-factory`` for deterministic dependencies.
+
+    """
     parser = build_parser()
     args = parser.parse_args(argv)
     try:

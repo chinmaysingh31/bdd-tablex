@@ -1,4 +1,13 @@
-"""Composition utilities for source-aware table transformations."""
+"""Composition utilities for source-aware table transformations.
+
+Transformers run after raw rows become ``TableData`` and before schema labels
+and values are validated. They let projects turn compact BDD authoring syntax
+into the logical table shape that schemas already understand.
+
+!!! info
+    Transformers must preserve source-aware cells so downstream diagnostics
+    can still point at the original feature text.
+"""
 
 from __future__ import annotations
 
@@ -11,7 +20,12 @@ from .table import TableData
 
 
 class TableTransformer(Protocol):
-    """Structural contract implemented by reusable table transformers."""
+    """Structural contract implemented by reusable table transformers.
+
+    !!! info
+        Any object with a compatible ``transform`` method satisfies this
+        protocol; inheritance is not required.
+    """
 
     def transform(
         self,
@@ -20,7 +34,21 @@ class TableTransformer(Protocol):
         *,
         schema: type | str | None = None,
     ) -> TableData:
-        """Return a source-aware table for the next transformation stage."""
+        """Return a source-aware table for the next transformation stage.
+
+        Args:
+            table: Current source-aware logical table.
+            context: Parse context for the current operation.
+            schema: Optional schema identity for diagnostics.
+
+        Returns:
+            A ``TableData`` object.
+
+        !!! warning
+            Return ``TableData``, not raw rows. Use ``TableData.from_cells``
+            after arranging source-aware cells.
+
+        """
 
 
 class TransformerPipeline:
@@ -29,9 +57,35 @@ class TransformerPipeline:
     Each stage receives the previous stage's ``TableData`` and the same parse
     context. Unexpected failures identify the stage, while intentional
     ``BDDTableError`` diagnostics pass through unchanged.
+
+    Attributes:
+        transformers: Immutable ordered transformation stages.
+
+    !!! example
+        ```python
+        table_transformer = compose_transformers(
+            NormalizeLabels(),
+            ColumnGroupExpander(...),
+        )
+        ```
+
     """
 
     def __init__(self, transformers: Sequence[TableTransformer]) -> None:
+        """Validate and store transformation stages.
+
+        Args:
+            transformers: Ordered transformer objects.
+
+        Raises:
+            ValueError: If no transformers are supplied.
+            TypeError: If a stage lacks a callable ``transform`` method.
+
+        !!! warning
+            Pipeline order is observable because each stage receives the
+            previous stage's output.
+
+        """
         if not transformers:
             raise ValueError("TransformerPipeline requires at least one transformer")
         for transformer in transformers:
@@ -46,7 +100,25 @@ class TransformerPipeline:
         *,
         schema: type | str | None = None,
     ) -> TableData:
-        """Apply every configured transformer and validate each result."""
+        """Apply every configured transformer and validate each result.
+
+        Args:
+            table: Initial source-aware table.
+            context: Parse context for the current operation.
+            schema: Optional schema identity for diagnostics.
+
+        Returns:
+            Final ``TableData`` produced by the last stage.
+
+        Raises:
+            BDDTableError: If a stage raises a table error, raises an
+                unexpected exception, or returns a non-``TableData`` value.
+
+        !!! info
+            Intentional ``BDDTableError`` instances are re-raised unchanged so
+            custom transformers keep their precise source diagnostics.
+
+        """
         current = table
         for index, transformer in enumerate(self.transformers, start=1):
             stage_name = type(transformer).__name__
@@ -71,5 +143,20 @@ class TransformerPipeline:
 
 
 def compose_transformers(*transformers: TableTransformer) -> TransformerPipeline:
-    """Create a reusable left-to-right table transformation pipeline."""
+    """Create a reusable left-to-right table transformation pipeline.
+
+    Args:
+        *transformers: Ordered transformer stages.
+
+    Returns:
+        A ``TransformerPipeline`` that can be assigned to
+        ``table_transformer`` on a schema.
+
+    !!! example
+        ```python
+        class ContentTable(ColumnTable):
+            table_transformer = compose_transformers(clean, expand)
+        ```
+
+    """
     return TransformerPipeline(transformers)

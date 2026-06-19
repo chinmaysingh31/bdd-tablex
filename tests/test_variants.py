@@ -210,6 +210,21 @@ def test_unknown_variant_reports_discriminator_cell():
     assert error.value.value == "Video"
 
 
+def test_row_unknown_variant_reports_preparsed_item_id():
+    class ContentTable(RowTable):
+        content_type = discriminator_field("type")
+        item = id_field("id")
+
+    @ContentTable.variant("Article")
+    class ArticleContent(ContentTable):
+        pass
+
+    with pytest.raises(BDDTableError, match="Unknown variant") as error:
+        ContentTable.parse([["type", "id"], ["Video", "row-7"]])
+
+    assert error.value.item_id == "row-7"
+
+
 def test_required_variant_field_is_checked_only_for_selected_variant():
     class ContentTable(ColumnTable):
         id = id_field("IDs")

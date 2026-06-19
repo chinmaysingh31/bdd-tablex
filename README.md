@@ -23,7 +23,7 @@ Install optional extras only for integrations you use:
 ```bash
 pip install "bdd-tablex[cli]"       # static Gherkin feature-file checks
 pip install "bdd-tablex[pydantic]"  # Pydantic output models
-pip install "bdd-tablex[test]"      # pytest and pytest-bdd test helpers
+pip install "bdd-tablex[test]"      # project test and runnable example dependencies
 ```
 
 The command-line tool is available as both `bdd-tablex` and

@@ -20,7 +20,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-from .checker import FeatureDiagnostic, check_feature
+from .checker import FeatureDiagnostic, check_feature_tables, discover_feature_tables
 from .schema import BaseTable
 
 
@@ -227,8 +227,9 @@ def _render_describe_text(schema: type[BaseTable]) -> str:
         suffix = f" ({', '.join(flags)})" if flags else ""
         aliases = f", aliases={list(field.aliases)!r}" if field.aliases else ""
         parser = f", parser={field.parser}" if field.parser else ""
+        empty = f", empty={field.empty}" if field.empty != "raw" else ""
         lines.append(
-            f"  - {field.name}: label={field.label!r}{aliases}{parser}{suffix}"
+            f"  - {field.name}: label={field.label!r}{aliases}{parser}{empty}{suffix}"
         )
 
     if contract.variants:
@@ -322,7 +323,6 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     diagnostics = []
     matched_tables = 0
-    from .checker import discover_feature_tables
 
     for path in args.paths:
         tables = discover_feature_tables(
@@ -332,11 +332,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         matched_tables += len(tables)
         diagnostics.extend(
-            check_feature(
-                path,
+            check_feature_tables(
+                tables,
                 schema=schema,
-                step=args.step,
-                scenario=args.scenario,
                 context=context,
             )
         )

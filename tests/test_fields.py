@@ -41,3 +41,53 @@ def test_id_field_can_use_a_custom_parser():
         value = field("Value")
 
     assert NumberedTable.parse([["IDs", "7"], ["Value", "seven"]])[0].id == 7
+
+
+def test_field_empty_policy_preserves_legacy_raw_default():
+    class EmptyTable(RowTable):
+        value = field("value", parser=lambda value, context: int(value))
+
+    record = EmptyTable.parse([["value"], [""]])[0]
+
+    assert record.value == ""
+
+
+def test_field_empty_policy_can_parse_blank_cells():
+    seen = []
+
+    def parse(value, context):
+        seen.append(value)
+        return "parsed-blank"
+
+    class EmptyTable(RowTable):
+        value = field("value", parser=parse, empty="parse")
+
+    record = EmptyTable.parse([["value"], [""]])[0]
+
+    assert record.value == "parsed-blank"
+    assert seen == [""]
+
+
+def test_field_empty_policy_can_convert_blank_cells_to_none():
+    class EmptyTable(RowTable):
+        value = field("value", empty="none")
+
+    record = EmptyTable.parse([["value"], [""]])[0]
+
+    assert record.value is None
+
+
+def test_field_empty_policy_can_reject_optional_blank_cells():
+    class EmptyTable(RowTable):
+        value = field("value", empty="error")
+
+    with pytest.raises(BDDTableError, match="empty value") as error:
+        EmptyTable.parse([["value"], [""]])
+
+    assert error.value.code == "empty_optional"
+    assert error.value.field == "value"
+
+
+def test_field_empty_policy_rejects_unknown_policy():
+    with pytest.raises(ValueError, match="empty must be"):
+        field("value", empty="sometimes")

@@ -55,6 +55,7 @@ class FieldContract:
         parser: Display name of the parser when present.
         reference_target: Referenced field name when this is a reference.
         reference_many: Whether the reference contains multiple keys.
+        empty: Explicit empty-cell policy for optional values.
 
     !!! info
         The contract is frozen so tools can cache it safely.
@@ -73,6 +74,7 @@ class FieldContract:
     parser: str | None
     reference_target: str | None
     reference_many: bool
+    empty: str
 
     @classmethod
     def from_field(cls, name: str, declared: Field) -> FieldContract:
@@ -109,6 +111,7 @@ class FieldContract:
             parser=_callable_name(declared.parser),
             reference_target=reference.target if reference else None,
             reference_many=reference.many if reference else False,
+            empty=declared.empty,
         )
 
 

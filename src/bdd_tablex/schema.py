@@ -1096,8 +1096,8 @@ class BaseTable(TableRecord, TableFields):
         if cell is None:
             raise RuntimeError("A present field must provide a TableCell")
 
-        if cell.value == "" and not declared.parse_empty:
-            if declared.required:
+        if cell.value == "":
+            if declared.required and not declared.parse_empty:
                 return cls._report(
                     BDDTableError.from_cell(
                         "Required field has an empty value",
@@ -1113,7 +1113,26 @@ class BaseTable(TableRecord, TableFields):
                     ),
                     errors,
                 )
-            return ""
+            if not declared.required and declared.empty == "none":
+                return None
+            if not declared.required and declared.empty == "error":
+                return cls._report(
+                    BDDTableError.from_cell(
+                        "Optional field has an empty value",
+                        cell,
+                        schema=cls,
+                        field=declared.label,
+                        item_id=item_id,
+                        code=BDDTableErrorCode.EMPTY_OPTIONAL,
+                        hint=(
+                            "Fill the cell, omit the field, or choose a different "
+                            "empty-cell policy for this schema field."
+                        ),
+                    ),
+                    errors,
+                )
+            if not declared.parse_empty:
+                return ""
 
         if declared.parser is None:
             return cell.value
@@ -1216,14 +1235,19 @@ class BaseTable(TableRecord, TableFields):
             seen.add(label)
 
     @classmethod
-    def _validate_required_presence(cls, labels: Sequence[str]) -> None:
+    def _validate_required_presence(
+        cls,
+        labels: Sequence[str],
+        errors: list[BDDTableError] | None = None,
+    ) -> None:
         """Validate required fields when a table contains no records.
 
         Args:
             labels: Labels present in the table's label row or column.
+            errors: Optional collection sink for recoverable diagnostics.
 
         Raises:
-            BDDTableError: If any required base-schema field is absent.
+            BDDTableError: In fail-fast mode when a required field is absent.
 
         !!! info
             Normal record parsing reports missing required fields per record.
@@ -1233,16 +1257,62 @@ class BaseTable(TableRecord, TableFields):
         present = set(labels)
         for declared in cls.__fields__.values():
             if declared.required and not present.intersection(declared.labels):
-                raise BDDTableError(
-                    "Required field is missing from the table",
-                    schema=cls,
-                    field=declared.label,
-                    code=BDDTableErrorCode.MISSING_REQUIRED,
-                    hint=(
-                        "Add this field to the table, or make the schema field "
-                        "optional if the project should supply it."
+                cls._report(
+                    BDDTableError(
+                        "Required field is missing from the table",
+                        schema=cls,
+                        field=declared.label,
+                        code=BDDTableErrorCode.MISSING_REQUIRED,
+                        hint=(
+                            "Add this field to the table, or make the schema field "
+                            "optional if the project should supply it."
+                        ),
                     ),
+                    errors,
                 )
+
+    @classmethod
+    def _parse_record_values(
+        cls,
+        record_cls: type[BaseTable],
+        cells_by_label: Mapping[str, TableCell],
+        *,
+        parse_context: ParseContext,
+        item_id: Any | None,
+        errors: list[BDDTableError] | None = None,
+        parsed_values: Mapping[str, Any] | None = None,
+        parsed_sources: Mapping[str, TableCell] | None = None,
+    ) -> tuple[bool, dict[str, Any], dict[str, TableCell], Any | None]:
+        """Parse applicable fields for one record schema."""
+        values = dict(parsed_values or {})
+        source_cells = dict(parsed_sources or {})
+        record_item_id = item_id
+        valid_record = True
+
+        for name, declared in record_cls.__fields__.items():
+            cell = record_cls._cell_for_field(declared, cells_by_label)
+            if name in values:
+                value = values[name]
+            else:
+                value = record_cls._value_for(
+                    declared,
+                    present=cell is not None,
+                    cell=cell,
+                    parse_context=parse_context,
+                    item_id=record_item_id,
+                    errors=errors,
+                )
+                if value is _INVALID:
+                    valid_record = False
+                    continue
+                values[name] = value
+
+            if cell is not None:
+                source_cells[name] = cell
+            if declared.is_id:
+                record_item_id = value
+
+        return valid_record, values, source_cells, record_item_id
 
     @classmethod
     def _record_from_values(
@@ -1439,12 +1509,13 @@ class BaseTable(TableRecord, TableFields):
                         continue
                     target_value = getattr(record, spec.target)
                     if target_value in index:
+                        target_declared = type(record).__fields__[spec.target]
                         cell = record.source_for(spec.target)
                         raise BDDTableError.from_cell(
                             f"Reference target {target_value!r} is not unique",
                             cell,
                             schema=type(record),
-                            field=declared.label,
+                            field=target_declared.label,
                             code=BDDTableErrorCode.REFERENCE_FAILED,
                         )
                     index[target_value] = record
@@ -1674,7 +1745,13 @@ class RowTable(BaseTable):
         cls._reject_duplicates(header_cells, errors)
         cls._validate_table_labels(header_cells, errors)
         if len(table.rows) == 1:
-            cls._validate_required_presence(headers)
+            cls._validate_required_presence(headers, errors)
+        id_fields = [
+            (name, declared)
+            for name, declared in cls.__fields__.items()
+            if declared.is_id
+        ]
+        preparse_id = len(id_fields) == 1
         records: list[BaseTable] = []
         for row_number, row_cells in enumerate(table.rows[1:], start=2):
             if len(row_cells) != len(headers):
@@ -1697,6 +1774,25 @@ class RowTable(BaseTable):
 
             item_id = None
             cells_by_label = dict(zip(headers, row_cells, strict=True))
+            parsed_values: dict[str, Any] = {}
+            parsed_sources: dict[str, TableCell] = {}
+            if preparse_id:
+                id_name, id_declared = id_fields[0]
+                id_cell = cls._cell_for_field(id_declared, cells_by_label)
+                item_id = cls._value_for(
+                    id_declared,
+                    present=id_cell is not None,
+                    cell=id_cell,
+                    parse_context=parse_context,
+                    item_id=id_cell.value if id_cell is not None else None,
+                    errors=errors,
+                )
+                if item_id is _INVALID:
+                    continue
+                parsed_values[id_name] = item_id
+                if id_cell is not None:
+                    parsed_sources[id_name] = id_cell
+
             record_cls, parsed_selector = cls._select_record_schema(
                 cells_by_label,
                 parse_context=parse_context,
@@ -1714,31 +1810,16 @@ class RowTable(BaseTable):
                     errors=errors,
                 )
             )
-            values: dict[str, Any] = {}
-            source_cells: dict[str, TableCell] = {}
-            valid_record = True
-            for name, declared in record_cls.__fields__.items():
-                cell = record_cls._cell_for_field(declared, cells_by_label)
-                present = cell is not None
-                if name in parsed_selector:
-                    value = parsed_selector[name]
-                else:
-                    value = record_cls._value_for(
-                        declared,
-                        present=present,
-                        cell=cell,
-                        parse_context=parse_context,
-                        item_id=item_id,
-                        errors=errors,
-                    )
-                if value is _INVALID:
-                    valid_record = False
-                    continue
-                values[name] = value
-                if cell is not None:
-                    source_cells[name] = cell
-                if declared.is_id:
-                    item_id = value
+            parsed_values.update(parsed_selector)
+            valid_record, values, source_cells, item_id = cls._parse_record_values(
+                record_cls,
+                cells_by_label,
+                parse_context=parse_context,
+                item_id=item_id,
+                errors=errors,
+                parsed_values=parsed_values,
+                parsed_sources=parsed_sources,
+            )
             if not valid_record:
                 continue
             records.append(
@@ -1890,23 +1971,27 @@ class ColumnTable(BaseTable):
         for row_number, row_cells in enumerate(table.rows, start=1):
             if len(row_cells) != width:
                 source_row = row_cells[0].source_row if row_cells else row_number
-                raise BDDTableError(
-                    f"Ragged row: expected {width} cells, got {len(row_cells)}",
-                    schema=cls,
-                    row=source_row,
-                    code=BDDTableErrorCode.RAGGED_ROW,
-                    hint=(
-                        "Make every table row contain the same number of cells "
-                        "as the ID row."
+                cls._report(
+                    BDDTableError(
+                        f"Ragged row: expected {width} cells, got {len(row_cells)}",
+                        schema=cls,
+                        row=source_row,
+                        code=BDDTableErrorCode.RAGGED_ROW,
+                        hint=(
+                            "Make every table row contain the same number of cells "
+                            "as the ID row."
+                        ),
                     ),
+                    errors,
                 )
+        cls._raise_collected(errors)
 
         label_cells = [row[0] for row in table.rows]
         labels = [cell.value for cell in label_cells]
         cls._reject_duplicates(label_cells, errors)
         cls._validate_table_labels(label_cells, errors)
         if width == 1:
-            cls._validate_required_presence(labels)
+            cls._validate_required_presence(labels, errors)
         records: list[BaseTable] = []
         seen_ids = set()
         for column_index in range(1, width):
@@ -1958,33 +2043,18 @@ class ColumnTable(BaseTable):
                     errors=errors,
                 )
             )
-            values: dict[str, Any] = {}
-            source_cells: dict[str, TableCell] = {}
-            valid_record = True
-            for name, declared in record_cls.__fields__.items():
-                if declared.is_id:
-                    values[name] = item_id
-                    source_cells[name] = id_cell
-                    continue
-                cell = record_cls._cell_for_field(declared, cells_by_label)
-                present = cell is not None
-                if name in parsed_selector:
-                    values[name] = parsed_selector[name]
-                else:
-                    values[name] = record_cls._value_for(
-                        declared,
-                        present=present,
-                        cell=cell,
-                        parse_context=parse_context,
-                        item_id=item_id,
-                        errors=errors,
-                    )
-                    if values[name] is _INVALID:
-                        valid_record = False
-                        values.pop(name)
-                        continue
-                if cell is not None:
-                    source_cells[name] = cell
+            id_name = id_declared.name
+            parsed_values = {id_name: item_id, **parsed_selector}
+            parsed_sources = {id_name: id_cell}
+            valid_record, values, source_cells, item_id = cls._parse_record_values(
+                record_cls,
+                cells_by_label,
+                parse_context=parse_context,
+                item_id=item_id,
+                errors=errors,
+                parsed_values=parsed_values,
+                parsed_sources=parsed_sources,
+            )
             if not valid_record:
                 continue
             records.append(

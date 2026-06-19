@@ -7,4 +7,5 @@
 __pycache__/
 *.py[cod]
 dist/
-explainer_docs/
+# explainer_docs/
+# examples_deprecated/

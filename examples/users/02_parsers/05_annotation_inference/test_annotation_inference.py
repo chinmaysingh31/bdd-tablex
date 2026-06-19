@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Literal
 
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import RowTable, field, string
 
 
@@ -45,4 +46,3 @@ def behavior(rows):
     assert user.tags == ["qa", "docs"]
     assert user.reviewer is None
     assert user.override == "MANY"
-

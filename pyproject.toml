@@ -92,6 +92,7 @@ ignore = ["D105", "D107", "D203", "D213"]
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["D"]
 "examples/**" = ["D"]
+"examples_deprecated/**" = ["D"]
 
 [tool.mypy]
 python_version = "3.12"

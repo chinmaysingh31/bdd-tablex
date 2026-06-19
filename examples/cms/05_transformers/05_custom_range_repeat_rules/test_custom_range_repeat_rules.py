@@ -11,7 +11,9 @@ class PairRange:
 
 class PairRepeat:
     def expand(self, cell, expected_count, context):
-        return [cell.with_value(f"{cell.value}-{index}") for index in range(expected_count)]
+        return [
+            cell.with_value(f"{cell.value}-{index}") for index in range(expected_count)
+        ]
 
 
 @scenario("content.feature", "Custom range and repeat rules receive parse context")

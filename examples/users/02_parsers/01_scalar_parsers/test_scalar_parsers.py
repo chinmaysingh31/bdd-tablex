@@ -1,5 +1,7 @@
 from decimal import Decimal
+
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import RowTable, decimal, field, floating, integer, string
 
 
@@ -27,4 +29,3 @@ def behavior(rows):
     assert user.username == "alice"
     assert user.mask == 255
     assert user.balance == Decimal("12.30")
-

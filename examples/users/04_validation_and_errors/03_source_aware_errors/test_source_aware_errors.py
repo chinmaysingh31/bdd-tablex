@@ -1,5 +1,6 @@
 import pytest
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import BDDTableError, RowTable, field
 
 
@@ -31,4 +32,3 @@ def behavior(rows):
         UserTable.parse(rows)
     assert captured.value.row == 2
     assert captured.value.column == 1
-

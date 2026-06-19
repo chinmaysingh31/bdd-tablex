@@ -1,4 +1,5 @@
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import RowTable, field
 
 
@@ -19,4 +20,3 @@ def example_table(datatable):
 @then("the aliases behavior is correct")
 def behavior(rows):
     assert UserTable.parse(rows)[0].name == "Alice Doe"
-

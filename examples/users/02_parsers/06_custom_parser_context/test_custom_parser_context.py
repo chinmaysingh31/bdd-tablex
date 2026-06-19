@@ -1,6 +1,6 @@
 from pytest_bdd import given, scenario, then
-from bdd_tablex import RowTable, field, id_field
 
+from bdd_tablex import RowTable, field, id_field
 
 seen = {}
 
@@ -40,4 +40,3 @@ def behavior(rows):
         "item_id": "U-1",
         "source_value": "alice",
     }
-

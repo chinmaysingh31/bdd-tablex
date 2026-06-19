@@ -1,4 +1,5 @@
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import RowTable, compose, each, field, integer, optional, split
 
 
@@ -24,4 +25,3 @@ def behavior(rows):
     assert user.tags == ["qa", "docs"]
     assert user.scores == [1, 2, 3]
     assert user.reviewer is None
-

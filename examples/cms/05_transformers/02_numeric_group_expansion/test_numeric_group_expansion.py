@@ -1,6 +1,13 @@
 from pytest_bdd import given, scenario, then
 
-from bdd_tablex import ColumnGroupExpander, ColumnTable, NumericRange, PrefixRepeat, field, id_field
+from bdd_tablex import (
+    ColumnGroupExpander,
+    ColumnTable,
+    NumericRange,
+    PrefixRepeat,
+    field,
+    id_field,
+)
 
 
 class ContentTable(ColumnTable):

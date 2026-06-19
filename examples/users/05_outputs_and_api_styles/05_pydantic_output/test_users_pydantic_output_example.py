@@ -1,7 +1,7 @@
 import pytest
 from pytest_bdd import given, scenario, then
-from bdd_tablex import RowTable, field
 
+from bdd_tablex import RowTable, field
 
 pydantic = pytest.importorskip("pydantic")
 
@@ -30,4 +30,3 @@ def example_table(datatable):
 @then("the pydantic output behavior is correct")
 def behavior(rows):
     assert UserTable.parse(rows) == [UserModel(username="alice", age=34)]
-

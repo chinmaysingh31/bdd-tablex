@@ -2,13 +2,14 @@ from pytest_bdd import given, scenario, then
 
 from bdd_tablex import CellDSL, ColumnTable, field, id_field
 
-
 content_cells = CellDSL()
 
 
 @content_cells.pattern(r"(?P<count>\d+):word")
 def generated_words(match, context):
-    return " ".join(f"{context.item_id}-{number}" for number in range(1, int(match["count"]) + 1))
+    return " ".join(
+        f"{context.item_id}-{number}" for number in range(1, int(match["count"]) + 1)
+    )
 
 
 class ContentTable(ColumnTable):

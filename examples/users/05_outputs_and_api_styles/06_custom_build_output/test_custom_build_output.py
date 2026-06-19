@@ -1,4 +1,5 @@
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import RowTable, field
 
 
@@ -25,4 +26,3 @@ def behavior(rows):
     assert ExampleTable.parse(rows, context={"prefix": "Value: "}) == [
         {"display": "Value: example"}
     ]
-

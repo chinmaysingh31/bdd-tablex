@@ -16,7 +16,9 @@ def example_table(datatable):
 @then("prefix and suffix repeat rules expand values")
 def prefix_and_suffix_repeats(rows):
     context = ParseContext()
-    key_cells = NumericRange("..").expand(TableCell.from_value("1..2", row=1, column=2), context)
+    key_cells = NumericRange("..").expand(
+        TableCell.from_value("1..2", row=1, column=2), context
+    )
     prefix_cells = PrefixRepeat(":").expand(
         TableCell.from_value("2:Article", row=2, column=2),
         len(key_cells),

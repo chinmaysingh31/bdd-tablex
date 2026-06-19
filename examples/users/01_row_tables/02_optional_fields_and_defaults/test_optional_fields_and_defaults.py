@@ -1,4 +1,5 @@
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import RowTable, field
 
 
@@ -27,4 +28,3 @@ def behavior(rows):
     user = UserTable.parse(rows, context={"team": "platform"})[0]
     assert user.role == "viewer"
     assert user.team == "platform"
-

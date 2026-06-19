@@ -1,5 +1,6 @@
 import pytest
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import BDDTableError, RowTable, field, id_field
 
 
@@ -28,4 +29,3 @@ def behavior(rows):
         UserTable.parse(rows)
     assert captured.value.item_id == "U-500"
     assert captured.value.value == "blocked"
-

@@ -3,7 +3,6 @@ from pytest_bdd import given, scenario, then
 
 from bdd_tablex import BDDTableError, CellDSL, ColumnTable, field, id_field
 
-
 content_cells = CellDSL()
 
 

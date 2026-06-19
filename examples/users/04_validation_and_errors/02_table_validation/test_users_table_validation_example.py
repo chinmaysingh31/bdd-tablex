@@ -1,5 +1,6 @@
 import pytest
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import BDDTableError, RowTable, field
 
 
@@ -27,4 +28,3 @@ def behavior(rows):
     assert len(UserTable.parse(rows)) == 2
     with pytest.raises(BDDTableError):
         UserTable.parse([["email"], ["a@example.com"], ["a@example.com"]])
-

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import RowTable, field
 
 
@@ -28,4 +29,3 @@ def example_table(datatable):
 def behavior(rows):
     assert ExampleTable.parse(rows) == [Value("example")]
     assert isinstance(ExampleTable.parse_records(rows)[0], ExampleTable)
-

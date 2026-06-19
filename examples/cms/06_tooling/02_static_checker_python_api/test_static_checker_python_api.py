@@ -2,7 +2,13 @@ from pathlib import Path
 
 from pytest_bdd import given, scenario, then
 
-from bdd_tablex import ColumnTable, check_feature, discover_feature_tables, field, id_field
+from bdd_tablex import (
+    ColumnTable,
+    check_feature,
+    discover_feature_tables,
+    field,
+    id_field,
+)
 from bdd_tablex.checker import check_feature_tables
 
 
@@ -16,7 +22,9 @@ def test_static_checker_python_api():
     pass
 
 
-@given("the following statically checked content exists:", target_fixture="feature_path")
+@given(
+    "the following statically checked content exists:", target_fixture="feature_path"
+)
 def statically_checked_content(datatable):
     return Path(__file__).with_name("content.feature")
 

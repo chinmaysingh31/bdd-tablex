@@ -1,4 +1,5 @@
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import RowTable, field
 
 
@@ -19,4 +20,3 @@ def example_table(datatable):
 @then("the pytest fixture behavior is correct")
 def behavior(rows, bdd_table):
     assert bdd_table.parse(rows, schema=ExampleTable)[0].value == "example"
-

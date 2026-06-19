@@ -1,5 +1,6 @@
 import pytest
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import RowTable, boolean, field
 
 
@@ -43,4 +44,3 @@ def behavior(rows):
     assert disabled.strict_active is False
     with pytest.raises(ValueError, match="overlap"):
         boolean(true_values=("yes",), false_values=("YES",))
-

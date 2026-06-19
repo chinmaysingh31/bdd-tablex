@@ -1,4 +1,5 @@
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import RowTable, field, parse_table, parse_table_records
 
 
@@ -20,4 +21,3 @@ def example_table(datatable):
 def behavior(rows):
     assert parse_table(ExampleTable, rows)[0].value == "example"
     assert isinstance(parse_table_records(ExampleTable, rows)[0], ExampleTable)
-

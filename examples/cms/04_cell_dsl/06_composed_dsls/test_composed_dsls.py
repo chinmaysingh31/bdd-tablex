@@ -2,7 +2,6 @@ from pytest_bdd import given, scenario, then
 
 from bdd_tablex import CellDSL, ColumnTable, compose_cell_dsls, field, id_field
 
-
 shared_cells = CellDSL()
 project_cells = CellDSL()
 

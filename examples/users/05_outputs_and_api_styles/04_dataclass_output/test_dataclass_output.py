@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import RowTable, field
 
 
@@ -29,4 +30,3 @@ def example_table(datatable):
 @then("the dataclass output behavior is correct")
 def behavior(rows):
     assert UserTable.parse(rows) == [User("alice", 34)]
-

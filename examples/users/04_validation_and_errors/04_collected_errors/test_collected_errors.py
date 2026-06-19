@@ -1,5 +1,6 @@
 import pytest
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import BDDTableErrors, RowTable, field
 
 
@@ -26,4 +27,3 @@ def behavior(rows):
         "empty_required",
         "parser_failed",
     ]
-

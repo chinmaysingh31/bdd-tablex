@@ -1,7 +1,14 @@
 import pytest
 from pytest_bdd import given, scenario, then
 
-from bdd_tablex import BDDTableError, ColumnTable, TableFields, discriminator, field, id_field
+from bdd_tablex import (
+    BDDTableError,
+    ColumnTable,
+    TableFields,
+    discriminator,
+    field,
+    id_field,
+)
 
 
 class ArticleFields(TableFields):

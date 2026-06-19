@@ -3,7 +3,9 @@ from pytest_bdd import given, scenario, then
 from bdd_tablex import TableData
 
 
-@scenario("content.feature", "TableData keeps current values and original source values")
+@scenario(
+    "content.feature", "TableData keeps current values and original source values"
+)
 def test_tabledata_and_tablecell():
     pass
 

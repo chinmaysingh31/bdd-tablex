@@ -1,4 +1,5 @@
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import RowTable, boolean, field
 
 
@@ -23,4 +24,3 @@ def behavior(rows):
     user = UserTable.parse(rows)[0]
     assert user.username == "alice"
     assert user.active is True
-

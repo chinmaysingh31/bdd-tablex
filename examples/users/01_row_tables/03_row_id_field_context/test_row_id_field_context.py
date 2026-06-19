@@ -1,6 +1,6 @@
 from pytest_bdd import given, scenario, then
-from bdd_tablex import RowTable, field, id_field
 
+from bdd_tablex import RowTable, field, id_field
 
 seen = []
 
@@ -37,4 +37,3 @@ def behavior(rows):
     assert seen == ["U-100"]
     assert user.audit_name == "audit-U-100"
     assert user.table_source.item_id == "U-100"
-

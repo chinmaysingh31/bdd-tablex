@@ -2,7 +2,6 @@ from pytest_bdd import given, scenario, then
 
 from bdd_tablex import CellDSL, ColumnTable, field, id_field
 
-
 status_cells = CellDSL()
 
 

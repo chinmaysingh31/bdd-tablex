@@ -1,5 +1,6 @@
 import pytest
 from pytest_bdd import given, scenario, then
+
 from bdd_tablex import BDDTableError, RowTable, field, integer
 
 
@@ -33,4 +34,3 @@ def behavior(rows):
     with pytest.raises(BDDTableError) as captured:
         UserTable.parse([["strict value"], [""]])
     assert captured.value.code == "empty_optional"
-

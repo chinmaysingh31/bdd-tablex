@@ -109,7 +109,7 @@ Read the feature file first, then the schema class, then the assertions. That or
 Run this example on its own while experimenting:
 
 ```powershell
-pytest examples/users/05_outputs_and_api_styles/02_functional_api/test_functional_api.py -q
+pytest examples/users/05_outputs_and_api_styles/02_functional_api/test_users_functional_api_example.py -q
 ```
 
 Keep changes local to this folder while learning. These examples are intentionally independent, so editing one folder should not force changes in a neighboring folder.

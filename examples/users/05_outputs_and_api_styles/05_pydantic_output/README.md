@@ -119,7 +119,7 @@ Read the feature file first, then the schema class, then the assertions. That or
 Run this example on its own while experimenting:
 
 ```powershell
-pytest examples/users/05_outputs_and_api_styles/05_pydantic_output/test_pydantic_output.py -q
+pytest examples/users/05_outputs_and_api_styles/05_pydantic_output/test_users_pydantic_output_example.py -q
 ```
 
 Keep changes local to this folder while learning. These examples are intentionally independent, so editing one folder should not force changes in a neighboring folder.

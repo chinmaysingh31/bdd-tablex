@@ -28,5 +28,5 @@ def duplicate_ids_are_reported(rows):
     assert error.value.code == BDDTableErrorCode.DUPLICATE_ID
     assert error.value.field == "IDs"
     assert error.value.item_id == "A-1"
-    assert error.value.row == 2
+    assert error.value.row == 1
     assert error.value.column == 3

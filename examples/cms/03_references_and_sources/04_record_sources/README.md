@@ -119,7 +119,7 @@ Read the feature file first, then the schema class, then the assertions. That or
 Run this example on its own while experimenting:
 
 ```powershell
-pytest examples/cms/03_references_and_sources/04_record_sources/test_record_sources.py -q
+pytest examples/cms/03_references_and_sources/04_record_sources/test_cms_record_sources_example.py -q
 ```
 
 Keep changes local to this folder while learning. These examples are intentionally independent, so editing one folder should not force changes in a neighboring folder.

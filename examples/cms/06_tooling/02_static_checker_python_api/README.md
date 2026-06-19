@@ -35,7 +35,8 @@ from pathlib import Path
 
 from pytest_bdd import given, scenario, then
 
-from bdd_tablex import ColumnTable, field, id_field, check_feature, check_feature_tables, discover_feature_tables
+from bdd_tablex import ColumnTable, check_feature, discover_feature_tables, field, id_field
+from bdd_tablex.checker import check_feature_tables
 
 
 class ContentTable(ColumnTable):

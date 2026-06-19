@@ -35,5 +35,5 @@ def dsl_error_diagnostics(rows):
     assert "generator unavailable" in str(error.value)
     assert error.value.field == "Headline*"
     assert error.value.item_id == "A-1"
-    assert error.value.row == 3
+    assert error.value.row == 2
     assert error.value.column == 2

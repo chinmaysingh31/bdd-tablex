@@ -117,7 +117,7 @@ Read the feature file first, then the schema class, then the assertions. That or
 Run this example on its own while experimenting:
 
 ```powershell
-pytest examples/users/04_validation_and_errors/02_table_validation/test_table_validation.py -q
+pytest examples/users/04_validation_and_errors/02_table_validation/test_users_table_validation_example.py -q
 ```
 
 Keep changes local to this folder while learning. These examples are intentionally independent, so editing one folder should not force changes in a neighboring folder.

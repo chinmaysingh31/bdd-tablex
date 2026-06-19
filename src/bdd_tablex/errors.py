@@ -41,6 +41,7 @@ class BDDTableErrorCode(str, Enum):
     UNKNOWN_FIELD = "unknown_field"
     MISSING_REQUIRED = "missing_required"
     EMPTY_REQUIRED = "empty_required"
+    EMPTY_OPTIONAL = "empty_optional"
     DEFAULT_FACTORY_FAILED = "default_factory_failed"
     PARSER_FAILED = "parser_failed"
     TRANSFORM_FAILED = "transform_failed"

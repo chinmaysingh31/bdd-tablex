@@ -230,8 +230,37 @@ def check_feature(
         deterministic and free of external side effects in CI/editor workflows.
 
     """
+    return check_feature_tables(
+        discover_feature_tables(path, step=step, scenario=scenario),
+        schema=schema,
+        context=context,
+    )
+
+
+def check_feature_tables(
+    tables: Iterable[FeatureTable],
+    *,
+    schema: type[BaseTable],
+    context: Mapping[str, Any] | None = None,
+) -> list[FeatureDiagnostic]:
+    """Validate already-discovered feature tables against one schema.
+
+    Args:
+        tables: Feature tables returned by ``discover_feature_tables``.
+        schema: Schema used to parse each data table.
+        context: Optional project data passed to schema parsing.
+
+    Returns:
+        Structured diagnostics for every matching table failure.
+
+    !!! info
+        ``check_feature`` discovers tables and delegates here. The CLI calls
+        this helper after its own discovery pass so it can count matches
+        without parsing the feature file twice.
+
+    """
     diagnostics: list[FeatureDiagnostic] = []
-    for discovered in discover_feature_tables(path, step=step, scenario=scenario):
+    for discovered in tables:
         try:
             schema.parse(
                 discovered.table,

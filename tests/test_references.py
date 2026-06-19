@@ -69,6 +69,24 @@ def test_reference_target_must_be_declared_and_unique():
     with pytest.raises(BDDTableError, match="is not declared"):
         MissingTargetTable.parse([["IDs", "1"], ["Parent", ""]])
 
+    class DuplicateTargetTable(ColumnTable):
+        id = id_field("IDs")
+        slug = field("Slug")
+        parent = reference("Parent", target="slug")
+
+    with pytest.raises(BDDTableError, match="is not unique") as error:
+        DuplicateTargetTable.parse(
+            [
+                ["IDs", "1", "2", "3"],
+                ["Slug", "same", "same", "child"],
+                ["Parent", "", "", "same"],
+            ]
+        )
+
+    assert error.value.field == "Slug"
+    assert error.value.row == 2
+    assert error.value.column == 3
+
 
 def test_reference_separator_cannot_be_empty():
     with pytest.raises(ValueError, match="separator cannot be empty"):

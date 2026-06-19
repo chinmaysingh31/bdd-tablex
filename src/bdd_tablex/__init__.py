@@ -1,10 +1,10 @@
 """Public API for bdd-tablex.
 
-The package exports the stable schema, parser, transformation, context,
-diagnostic, introspection, pytest, and CLI-checking helpers intended for normal
-project use. Implementation modules may expose additional names, but callers
-should treat exports from this module as the supported surface for the ``0.1``
-series.
+The package exports the schema, parser, transformation, context, diagnostic,
+introspection, pytest, and CLI-checking helpers intended for normal project use.
+Top-level exports include both everyday helpers and advanced extension objects
+so projects can build custom parsers, transformers, and diagnostics without
+depending on private module paths.
 
 !!! info
     Install optional extras only for integrations you use. Core schema parsing

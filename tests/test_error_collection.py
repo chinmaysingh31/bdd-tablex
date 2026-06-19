@@ -78,3 +78,31 @@ def test_invalid_error_mode_is_rejected():
 
     with pytest.raises(ValueError, match="error_mode"):
         ValueTable.parse([["value"], ["one"]], error_mode="everything")
+
+
+def test_collect_mode_reports_column_ragged_rows_as_aggregate():
+    class ValueTable(ColumnTable):
+        id = id_field("IDs")
+        value = field("Value")
+
+    with pytest.raises(BDDTableErrors) as captured:
+        ValueTable.parse([["IDs", "1"], ["Value"]], error_mode="collect")
+
+    assert len(captured.value) == 1
+    assert captured.value.errors[0].code == "ragged_row"
+
+
+def test_collect_mode_reports_all_missing_required_fields_without_data_rows():
+    class UserTable(RowTable):
+        name = field("name", required=True)
+        role = field("role", required=True)
+
+    with pytest.raises(BDDTableErrors) as captured:
+        UserTable.parse([["unknown"]], error_mode="collect")
+
+    assert [error.code for error in captured.value] == [
+        "unknown_field",
+        "missing_required",
+        "missing_required",
+    ]
+    assert [error.field for error in captured.value.errors[1:]] == ["name", "role"]

@@ -3,6 +3,7 @@ import sys
 from types import ModuleType
 
 from bdd_tablex import RowTable, check_feature, discover_feature_tables, field
+from bdd_tablex.checker import FeatureTable
 from bdd_tablex.cli import main
 
 FEATURE = """Feature: Static checking
@@ -180,3 +181,47 @@ def test_cli_fails_when_filters_match_no_tables(capsys):
 
     assert exit_code == 2
     assert "No matching" in capsys.readouterr().out
+
+
+def test_cli_reuses_discovered_tables(monkeypatch, capsys):
+    import bdd_tablex.cli as cli
+
+    module = ModuleType("bdd_tablex_cli_reuse_schema")
+    module.CheckedUserTable = CheckedUserTable
+    sys.modules[module.__name__] = module
+    calls = []
+    table = discover_feature_tables(
+        FEATURE_PATH,
+        step="the following checked users:",
+    )[0]
+
+    def discover_once(path, *, step=None, scenario=None):
+        calls.append((path, step, scenario))
+        return [
+            FeatureTable(
+                path=table.path,
+                feature=table.feature,
+                scenario=table.scenario,
+                step=table.step,
+                table=table.table,
+            )
+        ]
+
+    monkeypatch.setattr(cli, "discover_feature_tables", discover_once)
+    try:
+        exit_code = main(
+            [
+                "check",
+                FEATURE_PATH,
+                "--schema",
+                "bdd_tablex_cli_reuse_schema:CheckedUserTable",
+                "--step",
+                "the following checked users:",
+            ]
+        )
+    finally:
+        sys.modules.pop(module.__name__, None)
+
+    assert exit_code == 1
+    assert len(calls) == 1
+    assert "Found 2 table error(s)" in capsys.readouterr().out

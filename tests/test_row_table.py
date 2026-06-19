@@ -1,6 +1,6 @@
 import pytest
 
-from bdd_tablex import BDDTableError, RowTable, field
+from bdd_tablex import BDDTableError, RowTable, field, id_field
 
 
 class UserTable(RowTable):
@@ -54,3 +54,39 @@ def test_empty_required_cell_is_rejected():
     assert "row=2" in message
     assert "column=2" in message
     assert "value=''" in message
+
+
+def test_row_id_field_is_available_before_later_field_parsers():
+    seen_item_ids = []
+
+    def parser(value, context):
+        seen_item_ids.append(context.item_id)
+        raise ValueError("not accepted")
+
+    class OrderedRowTable(RowTable):
+        value = field("value", parser=parser)
+        item = id_field("id")
+
+    with pytest.raises(BDDTableError, match="not accepted") as error:
+        OrderedRowTable.parse([["value", "id"], ["bad", "row-1"]])
+
+    assert seen_item_ids == ["row-1"]
+    assert error.value.item_id == "row-1"
+
+
+def test_row_id_field_reaches_default_factories_and_sources():
+    seen_item_ids = []
+
+    def default(context):
+        seen_item_ids.append(context.item_id)
+        return f"generated-{context.item_id}"
+
+    class DefaultedRowTable(RowTable):
+        value = field("value", default_factory=default)
+        item = id_field("id")
+
+    record = DefaultedRowTable.parse_records([["id"], ["row-7"]])[0]
+
+    assert record.value == "generated-row-7"
+    assert record.table_source.item_id == "row-7"
+    assert seen_item_ids == ["row-7"]

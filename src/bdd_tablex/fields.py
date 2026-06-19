@@ -58,6 +58,7 @@ class Field:
         parser: Optional callable used to convert non-empty cell values.
         parse_empty: Whether explicit empty cells should still be sent to the
             parser.
+        empty: Policy for explicit empty cells on optional fields.
         is_id: Whether this field identifies column-oriented records.
         is_discriminator: Whether this field selects record variants.
         variants: Declarative discriminator component mapping.
@@ -78,6 +79,7 @@ class Field:
     default_factory: DefaultFactory | object = MISSING
     parser: Parser | None = None
     parse_empty: bool = False
+    empty: str = "raw"
     is_id: bool = False
     is_discriminator: bool = False
     variants: Mapping[Any, type] | None = None
@@ -104,6 +106,7 @@ class Field:
             default_factory=self.default_factory,
             parser=self.parser,
             parse_empty=self.parse_empty,
+            empty=self.empty,
             is_id=self.is_id,
             is_discriminator=self.is_discriminator,
             variants=self.variants,
@@ -183,6 +186,7 @@ def _validate_field_options(
     required: bool,
     default: Any,
     default_factory: DefaultFactory | object,
+    empty: str = "raw",
 ) -> tuple[str, ...]:
     """Validate declaration options shared by field constructors.
 
@@ -192,6 +196,7 @@ def _validate_field_options(
         required: Whether a value is required.
         default: Static default value or ``MISSING``.
         default_factory: Context-aware default factory or ``MISSING``.
+        empty: Explicit empty-cell policy.
 
     Returns:
         Aliases normalized to a tuple.
@@ -218,6 +223,8 @@ def _validate_field_options(
         raise ValueError("required fields cannot declare defaults")
     if default_factory is not MISSING and not callable(default_factory):
         raise TypeError("default_factory must be callable")
+    if empty not in {"raw", "parse", "none", "error"}:
+        raise ValueError("empty must be 'raw', 'parse', 'none', or 'error'")
     return normalized
 
 
@@ -229,6 +236,7 @@ def field(
     default_factory: DefaultFactory | object = MISSING,
     parser: Parser | None = None,
     aliases: Sequence[str] = (),
+    empty: str = "raw",
 ) -> Any:
     """Declare a row or column in a table schema.
 
@@ -243,6 +251,9 @@ def field(
         default_factory: Factory called for an absent optional field.
         parser: Optional parser for non-empty values.
         aliases: Alternate accepted table labels.
+        empty: Policy for explicit empty cells. ``"raw"`` preserves the legacy
+            empty string, ``"parse"`` sends it through the parser, ``"none"``
+            returns ``None``, and ``"error"`` rejects it.
 
     Returns:
         A descriptor collected by ``RowTable`` or ``ColumnTable`` subclasses.
@@ -261,6 +272,7 @@ def field(
         required=required,
         default=default,
         default_factory=default_factory,
+        empty=empty,
     )
     return Field(
         label=label,
@@ -269,7 +281,8 @@ def field(
         default=default,
         default_factory=default_factory,
         parser=parser,
-        parse_empty=bool(getattr(parser, "parse_empty", False)),
+        parse_empty=empty == "parse" or bool(getattr(parser, "parse_empty", False)),
+        empty=empty,
     )
 
 
@@ -279,7 +292,7 @@ def id_field(
     parser: Parser | None = None,
     aliases: Sequence[str] = (),
 ) -> Any:
-    """Declare the item identifier row for a column-oriented table.
+    """Declare the item identifier field for parsed records.
 
     Args:
         label: Canonical ID row label.
@@ -290,8 +303,9 @@ def id_field(
         A required identifier ``Field`` descriptor.
 
     !!! warning
-        A column-oriented table can declare only one ID field. The schema
-        lifecycle uses it to attach item IDs and resolve local references.
+        A column-oriented table must declare exactly one ID field. A
+        row-oriented table may declare one when parser contexts, defaults, and
+        diagnostics need a stable ``item_id``.
 
     """
     normalized_aliases = _validate_field_options(

@@ -17,7 +17,7 @@ from enum import Enum
 from typing import Any, Literal, Union, get_args, get_origin
 
 from .fields import Parser
-from .parsers import boolean, compose, decimal, each, floating, integer, optional, split
+from .parsers import boolean, decimal, floating, integer, optional
 
 
 def parser_for_annotation(annotation: Any) -> Parser | None:
@@ -33,8 +33,8 @@ def parser_for_annotation(annotation: Any) -> Parser | None:
 
     !!! info
         Supported annotations are ``str``, ``int``, ``float``, ``bool``,
-        ``Decimal``, enums, string ``Literal`` values, ``list[T]``, and
-        optional unions containing exactly one non-``None`` type.
+        ``Decimal``, enums, string ``Literal`` values, and optional unions
+        containing exactly one non-``None`` type.
 
     !!! warning
         Unsupported unions deliberately return ``None``. This prevents
@@ -45,7 +45,7 @@ def parser_for_annotation(annotation: Any) -> Parser | None:
         ```python
         class UserTable(RowTable):
             age: int = field("age")
-            tags: list[str] = field("tags")
+            reviewer: int | None = field("reviewer")
         ```
 
     """
@@ -70,9 +70,6 @@ def parser_for_annotation(annotation: Any) -> Parser | None:
             parser = parser_for_annotation(non_none[0]) or _identity
             return optional(parser)
         return None
-    if origin is list and len(arguments) == 1:
-        item_parser = parser_for_annotation(arguments[0]) or _identity
-        return compose(split(","), each(item_parser))
     if (
         origin is Literal
         and arguments
@@ -120,8 +117,8 @@ def _identity(value: Any, context: Any) -> Any:
         The same object received as ``value``.
 
     !!! info
-        This helper is used inside inferred ``Optional`` and ``list`` parsers
-        when the inner annotation means "keep this value as-is".
+        This helper is used inside inferred ``Optional`` parsers when the inner
+        annotation means "keep this value as-is".
 
     """
     return value

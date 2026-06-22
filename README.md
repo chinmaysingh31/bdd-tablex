@@ -108,7 +108,7 @@ select the applicable fields and behavior.
 The concise form maps values to reusable `TableFields` components:
 
 ```python
-from bdd_tablex import ColumnTable, TableFields, discriminator, field, id_field
+from bdd_tablex import ColumnTable, TableFields, discriminator, field, id_field, split
 
 
 class ArticleFields(TableFields):
@@ -116,7 +116,7 @@ class ArticleFields(TableFields):
 
 
 class PollFields(TableFields):
-    options: list[str] = field("Options*", required=True)
+    options: list[str] = field("Options*", required=True, parser=split(","))
 
 
 class ContentTable(ColumnTable):
@@ -141,7 +141,7 @@ The explicit form remains available when projects want to name and define the
 variant schema classes directly:
 
 ```python
-from bdd_tablex import ColumnTable, discriminator_field, field, id_field
+from bdd_tablex import ColumnTable, discriminator_field, field, id_field, split
 
 
 class ContentTable(ColumnTable):
@@ -157,7 +157,7 @@ class ArticleContent(ContentTable):
 
 @ContentTable.variant("Poll")
 class PollContent(ContentTable):
-    options: list[str] = field("Options*", required=True)
+    options: list[str] = field("Options*", required=True, parser=split(","))
 ```
 
 The table may include the union of the variant fields:
@@ -301,11 +301,13 @@ class UserTable(RowTable):
     name: str = field("name")
     age: int | None = field("age")
     active: bool = field("active")
-    tags: list[str] = field("tags")
+    reviewer: int | None = field("reviewer")
 ```
 
 Inference supports `str`, `int`, `float`, `bool`, `Decimal`, enums, string
-`Literal` values, `list[T]`, and simple optionals. Explicit parsers take
+`Literal` values, and simple optionals. Collection annotations such as
+`list[str]` do not imply a cell syntax; use an explicit parser such as
+`split(",")` when one cell should become several values. Explicit parsers take
 precedence, and unsupported annotations leave raw values unchanged. See
 [`examples/annotated_schema`](examples/annotated_schema).
 

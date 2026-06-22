@@ -34,22 +34,24 @@ def test_annotations_infer_supported_scalar_parsers():
     assert record.status is Status.PUBLISHED
 
 
-def test_annotations_infer_optional_list_and_literal_parsers():
+def test_annotations_infer_optional_and_literal_but_not_list_parsers():
     class TypedTable(RowTable):
         age: int | None = field("age")
         tags: list[str] = field("tags")
+        scores: list[int] = field("scores")
         state: Literal["draft", "published"] = field("state")
 
     records = TypedTable.parse(
         [
-            ["age", "tags", "state"],
-            ["", "news, featured", "draft"],
-            ["30", "archive", "published"],
+            ["age", "tags", "scores", "state"],
+            ["", "news, featured", "1, 2", "draft"],
+            ["30", "archive", "3", "published"],
         ]
     )
 
     assert records[0].age is None
-    assert records[0].tags == ["news", "featured"]
+    assert records[0].tags == "news, featured"
+    assert records[0].scores == "1, 2"
     assert records[1].age == 30
 
 

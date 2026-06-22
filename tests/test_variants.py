@@ -12,6 +12,7 @@ from bdd_tablex import (
     field,
     id_field,
     reference,
+    split,
 )
 
 
@@ -20,7 +21,7 @@ def test_discriminator_mapping_composes_table_field_components():
         body = field("Body", required=True)
 
     class PollFields(TableFields):
-        options: list[str] = field("Options", required=True)
+        options: list[str] = field("Options", required=True, parser=split(","))
 
     class ContentTable(ColumnTable):
         id = id_field("IDs")
@@ -127,7 +128,7 @@ def test_column_table_selects_variant_schema_for_each_item():
 
     @ContentTable.variant("Poll")
     class PollContent(ContentTable):
-        options: list[str] = field("Options*", required=True)
+        options: list[str] = field("Options*", required=True, parser=split(","))
 
     records = ContentTable.parse(
         [
@@ -320,7 +321,7 @@ def test_each_variant_can_construct_its_own_output_model():
     @ContentTable.variant("Poll")
     class PollContent(ContentTable):
         output_model = Poll
-        options: list[str] = field("options", required=True)
+        options: list[str] = field("options", required=True, parser=split(","))
 
     items = ContentTable.parse(
         [

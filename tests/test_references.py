@@ -1,6 +1,6 @@
 import pytest
 
-from bdd_tablex import BDDTableError, ColumnTable, field, id_field, integer, reference
+from talika import ColumnTable, TableError, field, id_field, integer, reference
 
 
 class ContentTable(ColumnTable):
@@ -34,18 +34,18 @@ def test_references_are_available_to_record_validation():
 
         def validate_record(self, context):
             if self.parent is self:
-                raise BDDTableError.from_cell(
+                raise TableError.from_cell(
                     "Content cannot reference itself",
                     self.source_for("parent"),
                     schema=type(self),
                 )
 
-    with pytest.raises(BDDTableError, match="cannot reference itself"):
+    with pytest.raises(TableError, match="cannot reference itself"):
         ValidatedContentTable.parse([["IDs", "1"], ["Parent", "1"]])
 
 
 def test_missing_reference_points_to_the_reference_cell():
-    with pytest.raises(BDDTableError, match="was not found") as error:
+    with pytest.raises(TableError, match="was not found") as error:
         ContentTable.parse(
             [
                 ["IDs", "1", "2"],
@@ -66,7 +66,7 @@ def test_reference_target_must_be_declared_and_unique():
         id = id_field("IDs")
         parent = reference("Parent", target="slug")
 
-    with pytest.raises(BDDTableError, match="is not declared"):
+    with pytest.raises(TableError, match="is not declared"):
         MissingTargetTable.parse([["IDs", "1"], ["Parent", ""]])
 
     class DuplicateTargetTable(ColumnTable):
@@ -74,7 +74,7 @@ def test_reference_target_must_be_declared_and_unique():
         slug = field("Slug")
         parent = reference("Parent", target="slug")
 
-    with pytest.raises(BDDTableError, match="is not unique") as error:
+    with pytest.raises(TableError, match="is not unique") as error:
         DuplicateTargetTable.parse(
             [
                 ["IDs", "1", "2", "3"],

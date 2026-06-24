@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 import pytest
 
-from bdd_tablex import (
-    BDDTableError,
+from talika import (
     ColumnTable,
     RowTable,
+    TableError,
     TableFields,
     discriminator,
     discriminator_field,
@@ -69,7 +69,7 @@ def test_discriminator_component_supplies_validation_and_output_model():
             variants={"Article": ArticleFields},
         )
 
-    with pytest.raises(BDDTableError, match="too short") as error:
+    with pytest.raises(TableError, match="too short") as error:
         ContentTable.parse(
             [["type", "body"], ["Article", "short"]],
             context={"minimum": 10},
@@ -200,7 +200,7 @@ def test_unknown_variant_reports_discriminator_cell():
     class ArticleContent(ContentTable):
         pass
 
-    with pytest.raises(BDDTableError, match="Unknown variant") as error:
+    with pytest.raises(TableError, match="Unknown variant") as error:
         ContentTable.parse([["IDs", "7"], ["Type", "Video"]])
 
     assert error.value.schema == "ContentTable"
@@ -220,7 +220,7 @@ def test_row_unknown_variant_reports_preparsed_item_id():
     class ArticleContent(ContentTable):
         pass
 
-    with pytest.raises(BDDTableError, match="Unknown variant") as error:
+    with pytest.raises(TableError, match="Unknown variant") as error:
         ContentTable.parse([["type", "id"], ["Video", "row-7"]])
 
     assert error.value.item_id == "row-7"
@@ -244,7 +244,7 @@ def test_required_variant_field_is_checked_only_for_selected_variant():
     ]
     assert isinstance(poll, PollContent)
 
-    with pytest.raises(BDDTableError, match="Required field is missing") as error:
+    with pytest.raises(TableError, match="Required field is missing") as error:
         ContentTable.parse([["IDs", "1"], ["Type", "Article"]])
 
     assert error.value.schema == "ArticleContent"
@@ -263,7 +263,7 @@ def test_nonempty_field_for_another_variant_is_rejected():
     class PollContent(ContentTable):
         options = field("options")
 
-    with pytest.raises(BDDTableError, match="does not apply") as error:
+    with pytest.raises(TableError, match="does not apply") as error:
         ContentTable.parse(
             [["type", "body", "options"], ["Poll", "unexpected", "Yes,No"]]
         )
@@ -286,7 +286,7 @@ def test_variant_validation_uses_selected_schema_and_context():
             if len(self.body) < context.user_data["minimum_body_length"]:
                 raise ValueError("Article body is too short")
 
-    with pytest.raises(BDDTableError, match="too short") as error:
+    with pytest.raises(TableError, match="too short") as error:
         ContentTable.parse(
             [["type", "body"], ["Article", "short"]],
             context={"minimum_body_length": 10},
@@ -369,7 +369,7 @@ def test_registering_variants_requires_one_discriminator_field():
     class ArticleContent(ContentTable):
         pass
 
-    with pytest.raises(BDDTableError, match="exactly one discriminator_field"):
+    with pytest.raises(TableError, match="exactly one discriminator_field"):
         ContentTable.parse([["type"], ["Article"]])
 
 

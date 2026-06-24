@@ -1,6 +1,6 @@
 import pytest
 
-from bdd_tablex import BDDTableError, RowTable, field, id_field
+from talika import RowTable, TableError, field, id_field
 
 
 class UserTable(RowTable):
@@ -35,19 +35,19 @@ def test_missing_optional_header_uses_default():
 
 
 def test_missing_required_header_is_rejected():
-    with pytest.raises(BDDTableError, match="Required field is missing") as error:
+    with pytest.raises(TableError, match="Required field is missing") as error:
         UserTable.parse([["name"], ["Alice"]])
 
     assert "field='role'" in str(error.value)
 
 
 def test_missing_required_header_is_rejected_without_data_rows():
-    with pytest.raises(BDDTableError, match="Required field is missing"):
+    with pytest.raises(TableError, match="Required field is missing"):
         UserTable.parse([["name"]])
 
 
 def test_empty_required_cell_is_rejected():
-    with pytest.raises(BDDTableError, match="empty value") as error:
+    with pytest.raises(TableError, match="empty value") as error:
         UserTable.parse([["name", "role"], ["Alice", ""]])
 
     message = str(error.value)
@@ -67,7 +67,7 @@ def test_row_id_field_is_available_before_later_field_parsers():
         value = field("value", parser=parser)
         item = id_field("id")
 
-    with pytest.raises(BDDTableError, match="not accepted") as error:
+    with pytest.raises(TableError, match="not accepted") as error:
         OrderedRowTable.parse([["value", "id"], ["bad", "row-1"]])
 
     assert seen_item_ids == ["row-1"]

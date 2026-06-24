@@ -1,6 +1,6 @@
 import pytest
 
-from bdd_tablex import ColumnTable, RowTable, field, id_field
+from talika import ColumnTable, RowTable, field, id_field
 
 
 def test_row_records_expose_read_only_field_sources():

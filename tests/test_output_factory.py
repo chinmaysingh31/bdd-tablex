@@ -1,4 +1,4 @@
-from bdd_tablex import RowTable, field
+from talika import RowTable, field
 
 
 def test_custom_output_builder_receives_record_and_context():

@@ -1,4 +1,4 @@
-from bdd_tablex import (
+from talika import (
     CellDSL,
     ParseContext,
     RowTable,

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from bdd_tablex import BDDTableError, RowTable, field, integer
+from talika import RowTable, TableError, field, integer
 
 
 @dataclass(frozen=True)
@@ -51,7 +51,7 @@ def test_validation_runs_on_schema_records_before_model_conversion():
             if self.age < 18:
                 raise ValueError("User must be an adult")
 
-    with pytest.raises(BDDTableError, match="must be an adult"):
+    with pytest.raises(TableError, match="must be an adult"):
         UserTable.parse([["name", "age"], ["Alice", "16"]])
 
     assert seen["source"] == "16"
@@ -69,7 +69,7 @@ def test_output_model_errors_include_record_location():
         output_model = StrictUser
         name = field("name")
 
-    with pytest.raises(BDDTableError, match="model rejected user") as error:
+    with pytest.raises(TableError, match="model rejected user") as error:
         UserTable.parse([["name"], ["Alice"]])
 
     assert error.value.row == 2

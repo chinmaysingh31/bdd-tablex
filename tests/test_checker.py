@@ -2,9 +2,9 @@ import json
 import sys
 from types import ModuleType
 
-from bdd_tablex import RowTable, check_feature, discover_feature_tables, field
-from bdd_tablex.checker import FeatureTable
-from bdd_tablex.cli import main
+from talika import RowTable, check_feature, discover_feature_tables, field
+from talika.checker import FeatureTable
+from talika.cli import main
 
 FEATURE = """Feature: Static checking
 
@@ -47,7 +47,7 @@ def test_static_checker_collects_schema_diagnostics():
 
 
 def test_cli_reports_valid_example(capsys):
-    module = ModuleType("bdd_tablex_cli_test_schema")
+    module = ModuleType("talika_cli_test_schema")
     module.CheckedUserTable = CheckedUserTable
     sys.modules[module.__name__] = module
     try:
@@ -56,7 +56,7 @@ def test_cli_reports_valid_example(capsys):
                 "check",
                 FEATURE_PATH,
                 "--schema",
-                "bdd_tablex_cli_test_schema:CheckedUserTable",
+                "talika_cli_test_schema:CheckedUserTable",
                 "--step",
                 "the following checked users:",
             ]
@@ -71,7 +71,7 @@ def test_cli_reports_valid_example(capsys):
 
 
 def test_cli_reports_json_diagnostics(capsys):
-    module = ModuleType("bdd_tablex_cli_json_schema")
+    module = ModuleType("talika_cli_json_schema")
     module.CheckedUserTable = CheckedUserTable
     sys.modules[module.__name__] = module
     try:
@@ -80,7 +80,7 @@ def test_cli_reports_json_diagnostics(capsys):
                 "check",
                 FEATURE_PATH,
                 "--schema",
-                "bdd_tablex_cli_json_schema:CheckedUserTable",
+                "talika_cli_json_schema:CheckedUserTable",
                 "--step",
                 "the following checked users:",
                 "--format",
@@ -99,14 +99,14 @@ def test_cli_reports_json_diagnostics(capsys):
 
 
 def test_cli_describes_schema_as_text(capsys):
-    module = ModuleType("bdd_tablex_cli_describe_schema")
+    module = ModuleType("talika_cli_describe_schema")
     module.CheckedUserTable = CheckedUserTable
     sys.modules[module.__name__] = module
     try:
         exit_code = main(
             [
                 "describe",
-                "bdd_tablex_cli_describe_schema:CheckedUserTable",
+                "talika_cli_describe_schema:CheckedUserTable",
             ]
         )
     finally:
@@ -120,16 +120,16 @@ def test_cli_describes_schema_as_text(capsys):
 
 
 def test_module_entrypoint_describes_schema_as_text(capsys):
-    from bdd_tablex.__main__ import main as module_main
+    from talika.__main__ import main as module_main
 
-    module = ModuleType("bdd_tablex_module_describe_schema")
+    module = ModuleType("talika_module_describe_schema")
     module.CheckedUserTable = CheckedUserTable
     sys.modules[module.__name__] = module
     try:
         exit_code = module_main(
             [
                 "describe",
-                "bdd_tablex_module_describe_schema:CheckedUserTable",
+                "talika_module_describe_schema:CheckedUserTable",
             ]
         )
     finally:
@@ -140,14 +140,14 @@ def test_module_entrypoint_describes_schema_as_text(capsys):
 
 
 def test_cli_describes_schema_as_json(capsys):
-    module = ModuleType("bdd_tablex_cli_describe_json_schema")
+    module = ModuleType("talika_cli_describe_json_schema")
     module.CheckedUserTable = CheckedUserTable
     sys.modules[module.__name__] = module
     try:
         exit_code = main(
             [
                 "describe",
-                "bdd_tablex_cli_describe_json_schema:CheckedUserTable",
+                "talika_cli_describe_json_schema:CheckedUserTable",
                 "--format",
                 "json",
             ]
@@ -162,7 +162,7 @@ def test_cli_describes_schema_as_json(capsys):
 
 
 def test_cli_fails_when_filters_match_no_tables(capsys):
-    module = ModuleType("bdd_tablex_cli_empty_schema")
+    module = ModuleType("talika_cli_empty_schema")
     module.CheckedUserTable = CheckedUserTable
     sys.modules[module.__name__] = module
     try:
@@ -171,7 +171,7 @@ def test_cli_fails_when_filters_match_no_tables(capsys):
                 "check",
                 FEATURE_PATH,
                 "--schema",
-                "bdd_tablex_cli_empty_schema:CheckedUserTable",
+                "talika_cli_empty_schema:CheckedUserTable",
                 "--step",
                 "a step that does not exist",
             ]
@@ -184,9 +184,9 @@ def test_cli_fails_when_filters_match_no_tables(capsys):
 
 
 def test_cli_reuses_discovered_tables(monkeypatch, capsys):
-    import bdd_tablex.cli as cli
+    import talika.cli as cli
 
-    module = ModuleType("bdd_tablex_cli_reuse_schema")
+    module = ModuleType("talika_cli_reuse_schema")
     module.CheckedUserTable = CheckedUserTable
     sys.modules[module.__name__] = module
     calls = []
@@ -214,7 +214,7 @@ def test_cli_reuses_discovered_tables(monkeypatch, capsys):
                 "check",
                 FEATURE_PATH,
                 "--schema",
-                "bdd_tablex_cli_reuse_schema:CheckedUserTable",
+                "talika_cli_reuse_schema:CheckedUserTable",
                 "--step",
                 "the following checked users:",
             ]

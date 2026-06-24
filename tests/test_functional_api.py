@@ -2,9 +2,9 @@ from dataclasses import dataclass
 
 import pytest
 
-from bdd_tablex import (
-    BDDTableErrors,
+from talika import (
     RowTable,
+    TableErrors,
     field,
     integer,
     parse_table,
@@ -67,7 +67,7 @@ def test_parse_table_forwards_error_mode_collect():
         name = field("name", required=True)
         age = field("age", parser=integer())
 
-    with pytest.raises(BDDTableErrors) as error:
+    with pytest.raises(TableErrors) as error:
         parse_table(
             StrictUserTable,
             [["name", "age"], ["", "old"]],

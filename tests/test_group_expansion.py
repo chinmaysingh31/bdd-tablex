@@ -1,8 +1,7 @@
 import pytest
 
-from bdd_tablex import (
+from talika import (
     AlphabeticRange,
-    BDDTableError,
     ColumnGroupExpander,
     ColumnTable,
     NumericRange,
@@ -11,6 +10,7 @@ from bdd_tablex import (
     SuffixRepeat,
     TableCell,
     TableData,
+    TableError,
     field,
     id_field,
 )
@@ -172,7 +172,7 @@ def test_repeat_error_points_to_original_cell_and_schema():
         id = id_field("IDs")
         content_type = field("Type")
 
-    with pytest.raises(BDDTableError, match="does not match") as error:
+    with pytest.raises(TableError, match="does not match") as error:
         ContentTable.parse(
             [
                 ["IDs", "1..3"],
@@ -193,14 +193,14 @@ def test_key_row_and_rectangular_shape_are_validated():
         repeat_rule=PrefixRepeat(":"),
     )
 
-    with pytest.raises(BDDTableError, match="Expected key row"):
+    with pytest.raises(TableError, match="Expected key row"):
         expander.transform(
             TableData.from_rows([["Keys", "1"]]),
             ParseContext(),
             schema="ContentTable",
         )
 
-    with pytest.raises(BDDTableError, match="rectangular"):
+    with pytest.raises(TableError, match="rectangular"):
         expander.transform(
             TableData.from_rows([["IDs", "1"], ["Type"]]),
             ParseContext(),
@@ -249,7 +249,7 @@ def test_custom_rules_must_return_cells_and_correct_counts():
         def expand(self, cell, expected_count, context):
             return [cell]
 
-    with pytest.raises(BDDTableError, match="must return TableCell"):
+    with pytest.raises(TableError, match="must return TableCell"):
         ColumnGroupExpander(
             key_row="Keys",
             range_rule=BadRange(),
@@ -259,7 +259,7 @@ def test_custom_rules_must_return_cells_and_correct_counts():
             ParseContext(),
         )
 
-    with pytest.raises(BDDTableError, match="produced 1 values"):
+    with pytest.raises(TableError, match="produced 1 values"):
         ColumnGroupExpander(
             key_row="Keys",
             range_rule=NumericRange(".."),

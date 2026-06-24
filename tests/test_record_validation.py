@@ -1,10 +1,10 @@
 import pytest
 
-from bdd_tablex import (
-    BDDTableError,
+from talika import (
     ColumnTable,
     ParseContext,
     RowTable,
+    TableError,
     field,
     id_field,
 )
@@ -55,7 +55,7 @@ def test_row_validation_failure_has_source_row():
             if self.role not in {"admin", "editor"}:
                 raise ValueError(f"Unsupported role: {self.role}")
 
-    with pytest.raises(BDDTableError, match="Unsupported role: owner") as error:
+    with pytest.raises(TableError, match="Unsupported role: owner") as error:
         UserTable.parse(
             [
                 ["name", "role"],
@@ -81,7 +81,7 @@ def test_column_validation_failure_has_item_id_and_source_column():
             if self.content_type == "Poll" and not self.headline.endswith("?"):
                 raise ValueError("Poll headline must end with a question mark")
 
-    with pytest.raises(BDDTableError, match="Poll headline") as error:
+    with pytest.raises(TableError, match="Poll headline") as error:
         ContentTable.parse(
             [
                 ["IDs", "1", "2"],

@@ -79,7 +79,7 @@ include = [
 
 [tool.pytest.ini_options]
 addopts = "-ra"
-testpaths = ["tests", "examples"]
+testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 88

@@ -139,11 +139,16 @@ class SchemaMeta(type):
                     )
                 labels[label] = field_name
 
-        for policy_name in ("unknown_fields", "inapplicable_fields"):
+        policy_options = {
+            "unknown_fields": ("forbid",),
+            "inapplicable_fields": ("forbid", "preserve"),
+        }
+        for policy_name, allowed in policy_options.items():
             policy = getattr(cls, policy_name, "forbid")
-            if policy not in {"forbid", "ignore", "preserve"}:
+            if policy not in allowed:
+                allowed_values = " or ".join(f"{value!r}" for value in allowed)
                 raise SchemaDefinitionError(
-                    f"{policy_name} must be 'forbid', 'ignore', or 'preserve'",
+                    f"{policy_name} must be {allowed_values}",
                     schema=cls.__name__,
                 )
 
@@ -624,34 +629,6 @@ class BaseTable(TableRecord, TableFields):
         return None
 
     @classmethod
-    def _unknown_extras(
-        cls,
-        cells_by_label: Mapping[str, TableCell],
-    ) -> dict[str, Any]:
-        """Return unknown values when the schema policy preserves them.
-
-        Args:
-            cells_by_label: Mapping from actual table labels to source cells.
-
-        Returns:
-            Unknown labels and current cell values, or an empty dictionary when
-            unknown fields are not preserved.
-
-        !!! warning
-            Preserved extras are not parsed by field parsers. They retain the
-            current table value after any transformation.
-
-        """
-        if cls.unknown_fields != "preserve":
-            return {}
-        accepted = cls._accepted_labels()
-        return {
-            label: cell.value
-            for label, cell in cells_by_label.items()
-            if label not in accepted
-        }
-
-    @classmethod
     def _validate_table_labels(
         cls,
         label_cells: Sequence[TableCell],
@@ -675,7 +652,7 @@ class BaseTable(TableRecord, TableFields):
         """
         accepted = cls._accepted_labels()
         for cell in label_cells:
-            if cell.value in accepted or cls.unknown_fields != "forbid":
+            if cell.value in accepted:
                 continue
             cls._report(
                 BDDTableError.from_cell(
@@ -684,10 +661,7 @@ class BaseTable(TableRecord, TableFields):
                     schema=cls,
                     field=cell.value,
                     code=BDDTableErrorCode.UNKNOWN_FIELD,
-                    hint=(
-                        "Use one of the schema field labels or aliases, or set "
-                        "unknown_fields to 'ignore' or 'preserve'."
-                    ),
+                    hint="Use one of the schema field labels or aliases.",
                 ),
                 errors,
             )
@@ -829,8 +803,6 @@ class BaseTable(TableRecord, TableFields):
             if label in applicable or cell.value == "":
                 continue
             if label not in cls._accepted_labels():
-                continue
-            if cls.inapplicable_fields == "ignore":
                 continue
             if cls.inapplicable_fields == "preserve":
                 extras[label] = cell.value
@@ -1333,7 +1305,7 @@ class BaseTable(TableRecord, TableFields):
             row: Source row for row-oriented records.
             column: Source ID column for column-oriented records.
             item_id: Parsed record ID when available.
-            extras: Preserved unknown or inapplicable values.
+            extras: Preserved inapplicable variant values.
 
         Returns:
             Populated schema record.
@@ -1801,14 +1773,11 @@ class RowTable(BaseTable):
             )
             if record_cls is None:
                 continue
-            extras = cls._unknown_extras(cells_by_label)
-            extras.update(
-                cls._reject_inapplicable_values(
-                    record_cls,
-                    cells_by_label,
-                    item_id=item_id,
-                    errors=errors,
-                )
+            extras = cls._reject_inapplicable_values(
+                record_cls,
+                cells_by_label,
+                item_id=item_id,
+                errors=errors,
             )
             parsed_values.update(parsed_selector)
             valid_record, values, source_cells, item_id = cls._parse_record_values(
@@ -2034,14 +2003,11 @@ class ColumnTable(BaseTable):
             )
             if record_cls is None:
                 continue
-            extras = cls._unknown_extras(cells_by_label)
-            extras.update(
-                cls._reject_inapplicable_values(
-                    record_cls,
-                    cells_by_label,
-                    item_id=item_id,
-                    errors=errors,
-                )
+            extras = cls._reject_inapplicable_values(
+                record_cls,
+                cells_by_label,
+                item_id=item_id,
+                errors=errors,
             )
             id_name = id_declared.name
             parsed_values = {id_name: item_id, **parsed_selector}

@@ -24,8 +24,8 @@ class TableRecord:
 
     Attributes:
         table_source: Immutable source metadata for the record.
-        table_extras: Preserved unknown or inapplicable values when schema
-            policy allows them.
+        table_extras: Preserved inapplicable variant values when schema policy
+            allows them.
 
     !!! warning
         Users normally subclass ``RowTable`` or ``ColumnTable`` rather than
@@ -108,11 +108,12 @@ class TableRecord:
         """Return values preserved by schema policy.
 
         Returns:
-            Read-only mapping of unknown or inapplicable labels to values.
+            Read-only mapping of preserved inapplicable variant labels to values.
 
         !!! warning
-            Extras exist only when the schema policy is ``"preserve"``. Code
-            should not depend on them for required domain fields.
+            Extras exist only when the variant inapplicable-field policy is
+            ``"preserve"``. Code should not depend on them for required domain
+            fields.
 
         """
         return self._table_extras

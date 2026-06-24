@@ -42,12 +42,12 @@ def test_default_factory_failure_has_structured_error_code():
 
     assert error.value.code == "unknown_field"
 
-    class PermissiveContentTable(RowTable):
-        unknown_fields = "ignore"
+    class FailingFactoryContentTable(RowTable):
+        title = field("title")
         headline = field("headline", default_factory=broken)
 
     with pytest.raises(BDDTableError, match="generator unavailable") as error:
-        PermissiveContentTable.parse([["other"], ["value"]])
+        FailingFactoryContentTable.parse([["title"], ["other"]])
 
     assert error.value.code == "default_factory_failed"
     assert isinstance(error.value.__cause__, RuntimeError)
@@ -85,16 +85,15 @@ def test_alias_collisions_are_rejected_when_schema_is_defined():
             title = field("title")
 
 
-@pytest.mark.parametrize("policy", ["ignore", "preserve"])
-def test_unknown_field_policies_allow_extra_columns(policy):
+def test_unknown_field_labels_are_rejected_by_default():
     class UserTable(RowTable):
-        unknown_fields = policy
         name = field("name")
 
-    user = UserTable.parse([["name", "team"], ["Alice", "News"]])[0]
+    with pytest.raises(BDDTableError) as error:
+        UserTable.parse([["name", "team"], ["Alice", "News"]])
 
-    assert user.name == "Alice"
-    assert user.table_extras == ({"team": "News"} if policy == "preserve" else {})
+    assert error.value.code == "unknown_field"
+    assert error.value.field == "team"
 
 
 def test_inapplicable_variant_policy_can_preserve_values():
@@ -118,11 +117,23 @@ def test_inapplicable_variant_policy_can_preserve_values():
     assert poll.table_extras == {"body": "legacy"}
 
 
-def test_invalid_policy_is_rejected_at_class_creation():
-    with pytest.raises(SchemaDefinitionError, match="unknown_fields"):
+@pytest.mark.parametrize("policy", ["ignore", "preserve", "sometimes"])
+def test_unknown_field_policy_only_accepts_forbid(policy):
+    with pytest.raises(SchemaDefinitionError, match="unknown_fields.*'forbid'"):
 
         class InvalidTable(RowTable):
-            unknown_fields = "sometimes"
+            unknown_fields = policy
+            value = field("value")
+
+
+def test_inapplicable_field_policy_rejects_ignore():
+    with pytest.raises(
+        SchemaDefinitionError,
+        match="inapplicable_fields.*'forbid'.*'preserve'",
+    ):
+
+        class InvalidTable(RowTable):
+            inapplicable_fields = "ignore"
             value = field("value")
 
 

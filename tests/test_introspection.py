@@ -6,7 +6,7 @@ def test_describe_returns_complete_machine_readable_contract():
         body = field("body", required=True)
 
     class ContentTable(RowTable):
-        unknown_fields = "preserve"
+        inapplicable_fields = "preserve"
         content_type = discriminator(
             "type",
             variants={"Article": ArticleFields},
@@ -21,7 +21,8 @@ def test_describe_returns_complete_machine_readable_contract():
 
     assert contract.schema_name == "ContentTable"
     assert contract.orientation == "row"
-    assert contract.unknown_fields == "preserve"
+    assert contract.unknown_fields == "forbid"
+    assert contract.inapplicable_fields == "preserve"
     headline = next(field for field in contract.fields if field.name == "headline")
     assert headline.aliases == ("title",)
     assert headline.has_default is True

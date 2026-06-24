@@ -1,10 +1,10 @@
 import pytest
 
-from bdd_tablex import (
-    BDDTableError,
+from talika import (
     ParseContext,
     RowTable,
     TableData,
+    TableError,
     field,
 )
 
@@ -58,7 +58,7 @@ def test_transform_hook_must_return_table_data():
         def transform_table(cls, table, context):
             return table.to_rows()
 
-    with pytest.raises(BDDTableError, match="must return TableData"):
+    with pytest.raises(TableError, match="must return TableData"):
         InvalidTable.parse([["value"], ["one"]])
 
 
@@ -70,7 +70,7 @@ def test_unexpected_transform_error_is_wrapped():
         def transform_table(cls, table, context):
             raise RuntimeError("transformer unavailable")
 
-    with pytest.raises(BDDTableError, match="transformer unavailable") as error:
+    with pytest.raises(TableError, match="transformer unavailable") as error:
         BrokenTable.parse([["value"], ["one"]])
 
     assert "schema=BrokenTable" in str(error.value)
@@ -84,9 +84,9 @@ def test_intentional_table_error_from_transformer_is_preserved():
         @classmethod
         def transform_table(cls, table, context):
             cell = table.cell(2, 1)
-            raise BDDTableError.from_cell("Invalid range", cell, schema=cls)
+            raise TableError.from_cell("Invalid range", cell, schema=cls)
 
-    with pytest.raises(BDDTableError, match="Invalid range") as error:
+    with pytest.raises(TableError, match="Invalid range") as error:
         RangeTable.parse([["value"], ["3..1"]])
 
     assert error.value.row == 2
@@ -117,7 +117,7 @@ def test_parser_error_after_transformation_reports_original_cell():
                 ]
             )
 
-    with pytest.raises(BDDTableError, match="expected Poll") as error:
+    with pytest.raises(TableError, match="expected Poll") as error:
         ExpandedTable.parse([["type"], ["3:Article"]])
 
     assert error.value.row == 2

@@ -1,4 +1,4 @@
-from bdd_tablex import RowTable, TableFields, field
+from talika import RowTable, TableFields, field
 
 
 class AuditFields(TableFields):

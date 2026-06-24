@@ -1,11 +1,11 @@
-"""Module entry point for ``python -m bdd_tablex``.
+"""Module entry point for ``python -m talika``.
 
 Running the package as a module delegates to the same CLI entry point as the
-``bdd-tablex`` console script.
+``talika`` console script.
 
 !!! example
     ```bash
-    python -m bdd_tablex describe tests/support/schemas.py:UserTable
+    python -m talika describe tests/support/schemas.py:UserTable
     ```
 """
 

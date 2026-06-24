@@ -1,6 +1,6 @@
-"""Pytest integration for bdd-tablex.
+"""Pytest integration for talika.
 
-Installing the package registers a ``bdd_table`` fixture. The fixture is a
+Installing the package registers a ``talika`` fixture. The fixture is a
 small facade around schema classmethods, useful when pytest dependency
 injection keeps BDD step functions cleaner.
 
@@ -23,16 +23,16 @@ from .table import RawTable, TableData
 TableT = TypeVar("TableT", bound=BaseTable)
 
 
-class BDDTableParser:
-    """Convenience facade exposed through the ``bdd_table`` fixture.
+class TalikaParser:
+    """Convenience facade exposed through the ``talika`` fixture.
 
     This facade intentionally delegates to the schema class. It does not own
     a second parser, registry, or pytest-specific table lifecycle.
 
     !!! example
         ```python
-        def step(datatable, bdd_table):
-            users = bdd_table.parse(datatable, schema=UserTable)
+        def step(datatable, talika):
+            users = talika.parse(datatable, schema=UserTable)
         ```
     """
 
@@ -94,15 +94,15 @@ class BDDTableParser:
 
 
 @pytest.fixture
-def bdd_table() -> BDDTableParser:
+def talika() -> TalikaParser:
     """Provide the schema parsing facade to pytest tests.
 
     Returns:
-        A new ``BDDTableParser`` facade.
+        A new ``TalikaParser`` facade.
 
     !!! info
         The facade is stateless, so creating one per fixture request is cheap
         and avoids hidden state between tests.
 
     """
-    return BDDTableParser()
+    return TalikaParser()

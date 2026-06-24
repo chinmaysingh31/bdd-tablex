@@ -97,7 +97,7 @@ class TableRecord:
         !!! example
             ```python
             cell = record.source_for("email")
-            raise BDDTableError.from_cell("Invalid email", cell)
+            raise TableError.from_cell("Invalid email", cell)
             ```
 
         """

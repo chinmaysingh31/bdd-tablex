@@ -2,9 +2,9 @@ from decimal import Decimal
 
 import pytest
 
-from bdd_tablex import (
-    BDDTableError,
+from talika import (
     RowTable,
+    TableError,
     boolean,
     choice,
     compose,
@@ -59,7 +59,7 @@ def test_optional_parser_handles_empty_and_null_values():
 
 
 def test_parser_failures_keep_existing_location_diagnostics():
-    with pytest.raises(BDDTableError, match="Expected one of") as error:
+    with pytest.raises(TableError, match="Expected one of") as error:
         parse_one(boolean(), "maybe")
 
     assert error.value.row == 2
@@ -81,5 +81,5 @@ def test_parser_configuration_errors_are_explicit():
 
 
 def test_each_rejects_non_iterable_and_string_results():
-    with pytest.raises(BDDTableError, match="non-string iterable"):
+    with pytest.raises(TableError, match="non-string iterable"):
         parse_one(each(integer()), "123")

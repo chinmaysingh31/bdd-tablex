@@ -5,7 +5,7 @@ a schema without executing pytest scenarios, and ``describe`` renders a schema
 contract for humans or tools.
 
 !!! info
-    The public console script and ``python -m bdd_tablex`` both delegate to
+    The public console script and ``python -m talika`` both delegate to
     ``main()`` in this module.
 """
 
@@ -52,7 +52,7 @@ def _import_object(reference: str) -> Any:
         if not module_path.exists():
             raise ImportError(f"Python module file does not exist: {module_path}")
         resolved = module_path.resolve()
-        generated_name = f"_bdd_tablex_cli_{resolved.stem}_{abs(hash(resolved))}"
+        generated_name = f"_talika_cli_{resolved.stem}_{abs(hash(resolved))}"
         spec = importlib.util.spec_from_file_location(generated_name, resolved)
         if spec is None or spec.loader is None:
             raise ImportError(f"Cannot import Python module file: {resolved}")
@@ -74,7 +74,7 @@ def _schema(reference: str) -> type[BaseTable]:
         reference: ``module:Schema`` or ``path.py:Schema`` reference.
 
     Returns:
-        A concrete bdd-tablex schema class.
+        A concrete talika schema class.
 
     Raises:
         TypeError: If the reference does not resolve to a ``BaseTable``
@@ -87,7 +87,7 @@ def _schema(reference: str) -> type[BaseTable]:
     """
     value = _import_object(reference)
     if not isinstance(value, type) or not issubclass(value, BaseTable):
-        raise TypeError(f"{reference!r} is not a bdd-tablex schema")
+        raise TypeError(f"{reference!r} is not a talika schema")
     return value
 
 
@@ -254,7 +254,7 @@ def build_parser() -> argparse.ArgumentParser:
         ```
 
     """
-    parser = argparse.ArgumentParser(prog="bdd-tablex")
+    parser = argparse.ArgumentParser(prog="talika")
     subparsers = parser.add_subparsers(dest="command", required=True)
     check = subparsers.add_parser(
         "check",
@@ -276,7 +276,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     describe = subparsers.add_parser(
         "describe",
-        help="print a bdd-tablex schema contract",
+        help="print a talika schema contract",
     )
     describe.add_argument("schema", help="module:SchemaClass")
     describe.add_argument(

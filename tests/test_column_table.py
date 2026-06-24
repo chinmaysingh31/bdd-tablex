@@ -1,6 +1,6 @@
 import pytest
 
-from bdd_tablex import BDDTableError, ColumnTable, field, id_field
+from talika import ColumnTable, TableError, field, id_field
 
 
 class ContentTable(ColumnTable):
@@ -38,7 +38,7 @@ def test_missing_optional_row_is_none():
 
 
 def test_missing_required_row_is_rejected_with_item_id():
-    with pytest.raises(BDDTableError, match="Required field is missing") as error:
+    with pytest.raises(TableError, match="Required field is missing") as error:
         ContentTable.parse([["IDs", "1"], ["Type*", "Article"]])
 
     message = str(error.value)
@@ -47,12 +47,12 @@ def test_missing_required_row_is_rejected_with_item_id():
 
 
 def test_missing_required_row_is_rejected_without_item_columns():
-    with pytest.raises(BDDTableError, match="Required field is missing"):
+    with pytest.raises(TableError, match="Required field is missing"):
         ContentTable.parse([["IDs"], ["Type*"]])
 
 
 def test_empty_required_cell_has_column_location_and_item_id():
-    with pytest.raises(BDDTableError, match="empty value") as error:
+    with pytest.raises(TableError, match="empty value") as error:
         ContentTable.parse(
             [
                 ["IDs", "1", "2"],
@@ -68,7 +68,7 @@ def test_empty_required_cell_has_column_location_and_item_id():
 
 
 def test_first_row_must_be_the_id_row():
-    with pytest.raises(BDDTableError, match="first row"):
+    with pytest.raises(TableError, match="first row"):
         ContentTable.parse(
             [
                 ["Type*", "Article"],
@@ -79,7 +79,7 @@ def test_first_row_must_be_the_id_row():
 
 
 def test_duplicate_ids_are_rejected():
-    with pytest.raises(BDDTableError, match="Duplicate item ID"):
+    with pytest.raises(TableError, match="Duplicate item ID"):
         ContentTable.parse(
             [
                 ["IDs", "1", "1"],

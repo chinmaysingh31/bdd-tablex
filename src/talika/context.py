@@ -5,7 +5,7 @@ They are immutable containers passed through transformers, parsers, default
 factories, and validation hooks during one parse operation.
 
 !!! info
-    ``bdd-tablex`` copies user mappings into read-only views so parser code can
+    ``talika`` copies user mappings into read-only views so parser code can
     read dependencies without accidentally mutating caller-owned state.
 """
 

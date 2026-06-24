@@ -1,6 +1,6 @@
 import pytest
 
-from bdd_tablex import BDDTableError, RowTable, field
+from talika import RowTable, TableError, field
 
 
 def test_validate_records_receives_all_records_and_context():
@@ -34,14 +34,14 @@ def test_table_validator_can_raise_source_aware_error():
             seen = {}
             for record in records:
                 if record.email in seen:
-                    raise BDDTableError.from_cell(
+                    raise TableError.from_cell(
                         "Duplicate email",
                         record.source_for("email"),
                         schema=cls,
                     )
                 seen[record.email] = record
 
-    with pytest.raises(BDDTableError, match="Duplicate email") as error:
+    with pytest.raises(TableError, match="Duplicate email") as error:
         UserTable.parse([["email"], ["a@example.com"], ["a@example.com"]])
 
     assert error.value.row == 3
@@ -56,7 +56,7 @@ def test_plain_table_validation_errors_are_wrapped():
         def validate_records(cls, records, context):
             raise ValueError("At least one primary user is required")
 
-    with pytest.raises(BDDTableError, match="Table validation failed") as error:
+    with pytest.raises(TableError, match="Table validation failed") as error:
         UserTable.parse([["email"], ["a@example.com"]])
 
     assert "At least one primary user" in str(error.value)

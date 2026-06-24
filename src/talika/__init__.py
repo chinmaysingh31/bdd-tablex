@@ -1,4 +1,4 @@
-"""Public API for bdd-tablex.
+"""Public API for talika.
 
 The package exports the schema, parser, transformation, context, diagnostic,
 introspection, pytest, and CLI-checking helpers intended for normal project use.
@@ -22,10 +22,10 @@ from .checker import (
 from .context import CellContext, DefaultContext, ParseContext
 from .dsl import CellDSL, CellDSLChain, compose_cell_dsls
 from .errors import (
-    BDDTableError,
-    BDDTableErrorCode,
-    BDDTableErrors,
     SchemaDefinitionError,
+    TableError,
+    TableErrorCode,
+    TableErrors,
 )
 from .fields import (
     Field,
@@ -70,14 +70,14 @@ from .transformers import (
 )
 
 try:
-    __version__ = version("bdd-tablex")
+    __version__ = version("talika")
 except PackageNotFoundError:
     __version__ = "0.1.0"
 
 __all__ = [
-    "BDDTableError",
-    "BDDTableErrorCode",
-    "BDDTableErrors",
+    "TableError",
+    "TableErrorCode",
+    "TableErrors",
     "AlphabeticRange",
     "CellDSL",
     "CellDSLChain",

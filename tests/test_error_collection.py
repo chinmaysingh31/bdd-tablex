@@ -1,10 +1,10 @@
 import pytest
 
-from bdd_tablex import (
-    BDDTableError,
-    BDDTableErrors,
+from talika import (
     ColumnTable,
     RowTable,
+    TableError,
+    TableErrors,
     field,
     id_field,
 )
@@ -15,7 +15,7 @@ def test_collect_mode_reports_multiple_cells_in_discovery_order():
         name = field("name", required=True)
         age: int = field("age")
 
-    with pytest.raises(BDDTableErrors) as captured:
+    with pytest.raises(TableErrors) as captured:
         UserTable.parse(
             [
                 ["name", "age"],
@@ -46,10 +46,10 @@ def test_first_mode_remains_the_default():
         name = field("name", required=True)
         age: int = field("age")
 
-    with pytest.raises(BDDTableError) as captured:
+    with pytest.raises(TableError) as captured:
         UserTable.parse([["name", "age"], ["", "old"]])
 
-    assert not isinstance(captured.value, BDDTableErrors)
+    assert not isinstance(captured.value, TableErrors)
     assert captured.value.code == "empty_required"
 
 
@@ -62,7 +62,7 @@ def test_collect_mode_combines_valid_record_validation_failures():
             if self.score < 0:
                 raise ValueError("score cannot be negative")
 
-    with pytest.raises(BDDTableErrors) as captured:
+    with pytest.raises(TableErrors) as captured:
         ScoreTable.parse(
             [["IDs", "1", "2"], ["Score", "-1", "-2"]],
             error_mode="collect",
@@ -85,7 +85,7 @@ def test_collect_mode_reports_column_ragged_rows_as_aggregate():
         id = id_field("IDs")
         value = field("Value")
 
-    with pytest.raises(BDDTableErrors) as captured:
+    with pytest.raises(TableErrors) as captured:
         ValueTable.parse([["IDs", "1"], ["Value"]], error_mode="collect")
 
     assert len(captured.value) == 1
@@ -97,7 +97,7 @@ def test_collect_mode_reports_all_missing_required_fields_without_data_rows():
         name = field("name", required=True)
         role = field("role", required=True)
 
-    with pytest.raises(BDDTableErrors) as captured:
+    with pytest.raises(TableErrors) as captured:
         UserTable.parse([["unknown"]], error_mode="collect")
 
     assert [error.code for error in captured.value] == [

@@ -1,6 +1,6 @@
 import pytest
 
-from bdd_tablex import BDDTableError, RowTable, TableCell, TableData, field
+from talika import RowTable, TableCell, TableData, TableError, field
 
 
 def test_from_rows_records_one_based_source_locations():
@@ -78,7 +78,7 @@ def test_parser_errors_report_a_transformed_cells_original_source():
         ]
     )
 
-    with pytest.raises(BDDTableError, match="not accepted") as error:
+    with pytest.raises(TableError, match="not accepted") as error:
         ContentTable.parse(table)
 
     message = str(error.value)
@@ -87,10 +87,10 @@ def test_parser_errors_report_a_transformed_cells_original_source():
     assert "value='3:Article'" in message
 
 
-def test_bdd_table_error_can_be_created_from_a_source_cell():
+def test_talika_error_can_be_created_from_a_source_cell():
     cell = TableCell.from_value("invalid-range", row=1, column=2)
 
-    error = BDDTableError.from_cell("Invalid range", cell, schema="ContentTable")
+    error = TableError.from_cell("Invalid range", cell, schema="ContentTable")
 
     assert error.row == 1
     assert error.column == 2

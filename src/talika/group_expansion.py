@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from .context import ParseContext
-from .errors import BDDTableError
+from .errors import TableError
 from .table import TableCell, TableData
 
 
@@ -39,7 +39,7 @@ class RangeRule(Protocol):
         A value that does not use the rule's special syntax should normally
         return ``[cell]``. Invalid recognized syntax may raise ``ValueError``;
         ``ColumnGroupExpander`` converts it into a source-aware
-        ``BDDTableError``.
+        ``TableError``.
 
         Args:
             cell: Source key cell from the grouped table.
@@ -446,7 +446,7 @@ class ColumnGroupExpander:
             expanded into one logical record column per key.
 
         Raises:
-            BDDTableError: If the table is empty, non-rectangular, has the
+            TableError: If the table is empty, non-rectangular, has the
                 wrong key row, or a custom rule returns invalid cells.
 
         !!! warning
@@ -456,19 +456,19 @@ class ColumnGroupExpander:
 
         """
         if not table.rows or not table.rows[0]:
-            raise BDDTableError("Grouped table is empty", schema=schema)
+            raise TableError("Grouped table is empty", schema=schema)
 
         source_width = len(table.rows[0])
         for row_number, row in enumerate(table.rows, start=1):
             if len(row) == source_width:
                 continue
             if row:
-                raise BDDTableError.from_cell(
+                raise TableError.from_cell(
                     "Column group expansion requires a rectangular table",
                     row[0],
                     schema=schema,
                 )
-            raise BDDTableError(
+            raise TableError(
                 "Column group expansion requires a rectangular table",
                 schema=schema,
                 row=row_number,
@@ -476,7 +476,7 @@ class ColumnGroupExpander:
 
         key_label = table.rows[0][0]
         if key_label.value != self.key_row:
-            raise BDDTableError.from_cell(
+            raise TableError.from_cell(
                 f"Expected key row {self.key_row!r}",
                 key_label,
                 schema=schema,
@@ -487,7 +487,7 @@ class ColumnGroupExpander:
             key_cell = table.rows[0][source_column]
             key_cells = self._expand_range(key_cell, context, schema)
             if not key_cells:
-                raise BDDTableError.from_cell(
+                raise TableError.from_cell(
                     "Range rule produced no keys",
                     key_cell,
                     schema=schema,
@@ -503,7 +503,7 @@ class ColumnGroupExpander:
                     schema,
                 )
                 if len(value_cells) != len(key_cells):
-                    raise BDDTableError.from_cell(
+                    raise TableError.from_cell(
                         f"Repeat rule produced {len(value_cells)} values for "
                         f"a group of {len(key_cells)} keys",
                         value_cell,
@@ -530,7 +530,7 @@ class ColumnGroupExpander:
             A list of ``TableCell`` objects produced by the range rule.
 
         Raises:
-            BDDTableError: If the rule raises a table error, raises another
+            TableError: If the rule raises a table error, raises another
                 exception, or returns non-cell values.
 
         !!! info
@@ -540,10 +540,10 @@ class ColumnGroupExpander:
         """
         try:
             cells = list(self.range_rule.expand(cell, context))
-        except BDDTableError:
+        except TableError:
             raise
         except Exception as exc:
-            raise BDDTableError.from_cell(
+            raise TableError.from_cell(
                 f"Range expansion failed: {exc}",
                 cell,
                 schema=schema,
@@ -570,7 +570,7 @@ class ColumnGroupExpander:
             A list of ``TableCell`` objects produced by the repeat rule.
 
         Raises:
-            BDDTableError: If the rule raises a table error, raises another
+            TableError: If the rule raises a table error, raises another
                 exception, or returns non-cell values.
 
         !!! warning
@@ -581,10 +581,10 @@ class ColumnGroupExpander:
         """
         try:
             cells = list(self.repeat_rule.expand(cell, expected_count, context))
-        except BDDTableError:
+        except TableError:
             raise
         except Exception as exc:
-            raise BDDTableError.from_cell(
+            raise TableError.from_cell(
                 f"Repeat expansion failed: {exc}",
                 cell,
                 schema=schema,
@@ -608,7 +608,7 @@ class ColumnGroupExpander:
             schema: Optional schema identity used in diagnostics.
 
         Raises:
-            BDDTableError: If any returned object is not a ``TableCell``.
+            TableError: If any returned object is not a ``TableCell``.
 
         !!! warning
             Returning raw strings would lose source coordinates. Custom rules
@@ -617,7 +617,7 @@ class ColumnGroupExpander:
         """
         if all(isinstance(cell, TableCell) for cell in cells):
             return
-        raise BDDTableError.from_cell(
+        raise TableError.from_cell(
             f"{rule_name} rule must return TableCell values",
             source,
             schema=schema,

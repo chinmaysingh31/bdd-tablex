@@ -1,6 +1,6 @@
 import pytest
 
-from bdd_tablex import BDDTableError, CellDSL, RowTable, field
+from talika import CellDSL, RowTable, TableError, field
 
 
 def test_exact_token_uses_cell_context():
@@ -146,7 +146,7 @@ def test_handler_failure_keeps_table_location_details():
     class ContentTable(RowTable):
         headline = field("headline", parser=dsl)
 
-    with pytest.raises(BDDTableError, match="generator unavailable") as error:
+    with pytest.raises(TableError, match="generator unavailable") as error:
         ContentTable.parse([["headline"], ["broken"]])
 
     message = str(error.value)

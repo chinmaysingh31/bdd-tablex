@@ -1,6 +1,6 @@
 import pytest
 
-from bdd_tablex import BDDTableError, RowTable, field
+from talika import RowTable, TableError, field
 
 
 def test_parser_receives_cell_location_and_user_context():
@@ -30,7 +30,7 @@ def test_parser_failure_is_wrapped_with_cell_details():
     class ParsedTable(RowTable):
         value = field("value", parser=fail)
 
-    with pytest.raises(BDDTableError, match="Field parser failed") as error:
+    with pytest.raises(TableError, match="Field parser failed") as error:
         ParsedTable.parse([["value"], ["bad"]])
 
     message = str(error.value)

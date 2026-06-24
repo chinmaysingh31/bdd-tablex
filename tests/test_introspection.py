@@ -1,4 +1,4 @@
-from bdd_tablex import RowTable, TableFields, discriminator, field
+from talika import RowTable, TableFields, discriminator, field
 
 
 def test_describe_returns_complete_machine_readable_contract():

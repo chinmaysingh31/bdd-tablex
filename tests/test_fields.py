@@ -1,10 +1,10 @@
 import pytest
 
-from bdd_tablex import (
-    BDDTableError,
+from talika import (
     ColumnTable,
     RowTable,
     SchemaDefinitionError,
+    TableError,
     field,
     id_field,
 )
@@ -23,7 +23,7 @@ def test_column_table_requires_exactly_one_id_field():
     class MissingIdTable(ColumnTable):
         value = field("Value")
 
-    with pytest.raises(BDDTableError, match="exactly one id_field"):
+    with pytest.raises(TableError, match="exactly one id_field"):
         MissingIdTable.parse([["Value", "one"]])
 
 
@@ -81,7 +81,7 @@ def test_field_empty_policy_can_reject_optional_blank_cells():
     class EmptyTable(RowTable):
         value = field("value", empty="error")
 
-    with pytest.raises(BDDTableError, match="empty value") as error:
+    with pytest.raises(TableError, match="empty value") as error:
         EmptyTable.parse([["value"], [""]])
 
     assert error.value.code == "empty_optional"

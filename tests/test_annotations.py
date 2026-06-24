@@ -4,7 +4,7 @@ from typing import Literal
 
 import pytest
 
-from bdd_tablex import BDDTableError, RowTable, field, string
+from talika import RowTable, TableError, field, string
 
 
 class Status(Enum):
@@ -76,7 +76,7 @@ def test_inferred_parser_errors_keep_cell_location():
     class TypedTable(RowTable):
         count: int = field("count")
 
-    with pytest.raises(BDDTableError, match="invalid literal") as error:
+    with pytest.raises(TableError, match="invalid literal") as error:
         TypedTable.parse([["count"], ["many"]])
 
     assert error.value.row == 2

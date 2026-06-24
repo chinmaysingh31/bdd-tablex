@@ -15,7 +15,7 @@ from collections.abc import Sequence
 from typing import Protocol
 
 from .context import ParseContext
-from .errors import BDDTableError, BDDTableErrorCode
+from .errors import TableError, TableErrorCode
 from .table import TableData
 
 
@@ -56,7 +56,7 @@ class TransformerPipeline:
 
     Each stage receives the previous stage's ``TableData`` and the same parse
     context. Unexpected failures identify the stage, while intentional
-    ``BDDTableError`` diagnostics pass through unchanged.
+    ``TableError`` diagnostics pass through unchanged.
 
     Attributes:
         transformers: Immutable ordered transformation stages.
@@ -111,11 +111,11 @@ class TransformerPipeline:
             Final ``TableData`` produced by the last stage.
 
         Raises:
-            BDDTableError: If a stage raises a table error, raises an
+            TableError: If a stage raises a table error, raises an
                 unexpected exception, or returns a non-``TableData`` value.
 
         !!! info
-            Intentional ``BDDTableError`` instances are re-raised unchanged so
+            Intentional ``TableError`` instances are re-raised unchanged so
             custom transformers keep their precise source diagnostics.
 
         """
@@ -124,20 +124,20 @@ class TransformerPipeline:
             stage_name = type(transformer).__name__
             try:
                 current = transformer.transform(current, context, schema=schema)
-            except BDDTableError:
+            except TableError:
                 raise
             except Exception as exc:
-                raise BDDTableError(
+                raise TableError(
                     f"Table transformer stage {index} ({stage_name}) failed: {exc}",
                     schema=schema,
-                    code=BDDTableErrorCode.TRANSFORM_FAILED,
+                    code=TableErrorCode.TRANSFORM_FAILED,
                 ) from exc
             if not isinstance(current, TableData):
-                raise BDDTableError(
+                raise TableError(
                     f"Table transformer stage {index} ({stage_name}) must return "
                     "TableData",
                     schema=schema,
-                    code=BDDTableErrorCode.INVALID_TRANSFORM,
+                    code=TableErrorCode.INVALID_TRANSFORM,
                 )
         return current
 

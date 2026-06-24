@@ -1,10 +1,10 @@
 import pytest
 
-from bdd_tablex import (
-    BDDTableError,
+from talika import (
     ColumnTable,
     RowTable,
     SchemaDefinitionError,
+    TableError,
     TableFields,
     discriminator,
     field,
@@ -37,7 +37,7 @@ def test_default_factory_failure_has_structured_error_code():
     class ContentTable(RowTable):
         headline = field("headline", default_factory=broken)
 
-    with pytest.raises(BDDTableError) as error:
+    with pytest.raises(TableError) as error:
         ContentTable.parse([["other"], ["value"]])
 
     assert error.value.code == "unknown_field"
@@ -46,7 +46,7 @@ def test_default_factory_failure_has_structured_error_code():
         title = field("title")
         headline = field("headline", default_factory=broken)
 
-    with pytest.raises(BDDTableError, match="generator unavailable") as error:
+    with pytest.raises(TableError, match="generator unavailable") as error:
         FailingFactoryContentTable.parse([["title"], ["other"]])
 
     assert error.value.code == "default_factory_failed"
@@ -71,7 +71,7 @@ def test_canonical_label_and_alias_cannot_appear_together():
     class UserTable(RowTable):
         name = field("name", aliases=("full name",))
 
-    with pytest.raises(BDDTableError, match="one of its aliases") as error:
+    with pytest.raises(TableError, match="one of its aliases") as error:
         UserTable.parse([["name", "full name"], ["Alice", "Alice"]])
 
     assert error.value.code == "duplicate_label"
@@ -89,7 +89,7 @@ def test_unknown_field_labels_are_rejected_by_default():
     class UserTable(RowTable):
         name = field("name")
 
-    with pytest.raises(BDDTableError) as error:
+    with pytest.raises(TableError) as error:
         UserTable.parse([["name", "team"], ["Alice", "News"]])
 
     assert error.value.code == "unknown_field"

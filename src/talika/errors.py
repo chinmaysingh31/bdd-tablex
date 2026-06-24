@@ -1,4 +1,4 @@
-"""Structured errors with BDD-table location details.
+"""Structured table errors with source location details.
 
 The package raises errors that are useful both to humans and to tools. Human
 messages explain what failed; stable codes and source coordinates let pytest,
@@ -20,7 +20,7 @@ from .table import TableCell
 _UNSET = object()
 
 
-class BDDTableErrorCode(str, Enum):
+class TableErrorCode(str, Enum):
     """Stable machine-readable categories for table failures.
 
     Human-readable messages may improve over time. Integrations should use
@@ -55,7 +55,7 @@ class BDDTableErrorCode(str, Enum):
     OUTPUT_FAILED = "output_failed"
 
 
-class BDDTableError(ValueError):
+class TableError(ValueError):
     """Represent one source-aware table diagnostic.
 
     The structured attributes are intentionally public. Test runners and
@@ -74,7 +74,7 @@ class BDDTableError(ValueError):
         hint: Optional remediation text.
 
     !!! info
-        ``BDDTableError`` inherits ``ValueError`` so project validators can
+        ``TableError`` inherits ``ValueError`` so project validators can
         raise ordinary value errors while the schema lifecycle wraps them in a
         table-aware diagnostic.
 
@@ -90,7 +90,7 @@ class BDDTableError(ValueError):
         column: int | None = None,
         item_id: Any | None = None,
         value: Any = _UNSET,
-        code: BDDTableErrorCode | str = BDDTableErrorCode.TABLE_ERROR,
+        code: TableErrorCode | str = TableErrorCode.TABLE_ERROR,
         hint: str | None = None,
     ) -> None:
         """Initialize one structured table diagnostic.
@@ -123,7 +123,7 @@ class BDDTableError(ValueError):
         self.column = column
         self.item_id = item_id
         self.value = value
-        self.code = code.value if isinstance(code, BDDTableErrorCode) else str(code)
+        self.code = code.value if isinstance(code, TableErrorCode) else str(code)
         self.hint = hint
         super().__init__(self.__str__())
 
@@ -136,9 +136,9 @@ class BDDTableError(ValueError):
         schema: type | str | None = None,
         field: str | None = None,
         item_id: Any | None = None,
-        code: BDDTableErrorCode | str = BDDTableErrorCode.TABLE_ERROR,
+        code: TableErrorCode | str = TableErrorCode.TABLE_ERROR,
         hint: str | None = None,
-    ) -> BDDTableError:
+    ) -> TableError:
         """Create an error located at a cell's original source.
 
         This helper is useful inside custom table transformations. It reports
@@ -154,11 +154,11 @@ class BDDTableError(ValueError):
             hint: Optional user-facing remediation.
 
         Returns:
-            A ``BDDTableError`` populated from ``cell`` source coordinates.
+            A ``TableError`` populated from ``cell`` source coordinates.
 
         !!! example
             ```python
-            raise BDDTableError.from_cell(
+            raise TableError.from_cell(
                 "Invalid compact range",
                 source_cell,
                 schema=ContentTable,
@@ -222,7 +222,7 @@ class BDDTableError(ValueError):
         return self.value is not _UNSET
 
 
-class BDDTableErrors(ValueError):
+class TableErrors(ValueError):
     """Aggregate raised when collect mode finds several table failures.
 
     The contained errors retain their normal structured attributes and source
@@ -231,7 +231,7 @@ class BDDTableErrors(ValueError):
     format most useful to their users.
 
     Attributes:
-        errors: Immutable tuple of collected ``BDDTableError`` objects.
+        errors: Immutable tuple of collected ``TableError`` objects.
 
     !!! info
         Collection preserves discovery order so rendered diagnostics follow
@@ -239,7 +239,7 @@ class BDDTableErrors(ValueError):
 
     """
 
-    def __init__(self, errors: list[BDDTableError] | tuple[BDDTableError, ...]):
+    def __init__(self, errors: list[TableError] | tuple[TableError, ...]):
         """Initialize an aggregate of one or more diagnostics.
 
         Args:
@@ -254,15 +254,15 @@ class BDDTableErrors(ValueError):
 
         """
         if not errors:
-            raise ValueError("BDDTableErrors requires at least one error")
+            raise ValueError("TableErrors requires at least one error")
         self.errors = tuple(errors)
         super().__init__(self.__str__())
 
-    def __iter__(self) -> Iterator[BDDTableError]:
+    def __iter__(self) -> Iterator[TableError]:
         """Iterate over diagnostics in discovery order.
 
         Returns:
-            Iterator over contained ``BDDTableError`` objects.
+            Iterator over contained ``TableError`` objects.
 
         !!! info
             This lets callers use ``list(exc)`` or simple loops without
@@ -275,7 +275,7 @@ class BDDTableErrors(ValueError):
         """Return the number of collected diagnostics.
 
         Returns:
-            Count of contained ``BDDTableError`` objects.
+            Count of contained ``TableError`` objects.
 
         !!! info
             ``len(exc)`` mirrors the number reported in the aggregate message.
@@ -294,7 +294,7 @@ class BDDTableErrors(ValueError):
             renderers should iterate over ``errors`` instead.
 
         """
-        lines = [f"BDD table contains {len(self.errors)} errors:"]
+        lines = [f"Table contains {len(self.errors)} errors:"]
         lines.extend(
             f"  {index}. {error}" for index, error in enumerate(self.errors, 1)
         )

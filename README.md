@@ -1,6 +1,6 @@
-# bdd-tablex
+# talika
 
-`bdd-tablex` adds small, dataclass-style schemas to BDD data tables. It parses
+`talika` adds small, dataclass-style schemas to BDD data tables. It parses
 the raw list-of-lists supplied by tools such as `pytest-bdd`, validates the
 table shape, converts cells with project-defined parsers, and returns typed
 schema records.
@@ -11,28 +11,28 @@ fully custom table transformation.
 
 ## Installation
 
-`bdd-tablex` supports Python 3.10 and newer. The core package has no runtime
+`talika` supports Python 3.10 and newer. The core package has no runtime
 dependencies:
 
 ```bash
-pip install bdd-tablex
+pip install talika
 ```
 
 Install optional extras only for integrations you use:
 
 ```bash
-pip install "bdd-tablex[cli]"       # static Gherkin feature-file checks
-pip install "bdd-tablex[pydantic]"  # Pydantic output models
-pip install "bdd-tablex[test]"      # project test and runnable example dependencies
+pip install "talika[cli]"       # static Gherkin feature-file checks
+pip install "talika[pydantic]"  # Pydantic output models
+pip install "talika[test]"      # project test and runnable example dependencies
 ```
 
-The command-line tool is available as both `bdd-tablex` and
-`python -m bdd_tablex`.
+The command-line tool is available as both `talika` and
+`python -m talika`.
 
 ## Row-oriented tables
 
 ```python
-from bdd_tablex import RowTable, field
+from talika import RowTable, field
 
 
 def parse_bool(value, context):
@@ -57,7 +57,7 @@ assert users[0].active is True
 ## Column-oriented tables
 
 ```python
-from bdd_tablex import ColumnTable, field, id_field
+from talika import ColumnTable, field, id_field
 
 
 class ContentTable(ColumnTable):
@@ -90,7 +90,7 @@ If your codebase prefers explicit parser functions, use the functional
 equivalent:
 
 ```python
-from bdd_tablex import parse_table, parse_table_records
+from talika import parse_table, parse_table_records
 
 items = parse_table(ContentTable, datatable)
 records = parse_table_records(ContentTable, datatable)
@@ -108,7 +108,7 @@ select the applicable fields and behavior.
 The concise form maps values to reusable `TableFields` components:
 
 ```python
-from bdd_tablex import ColumnTable, TableFields, discriminator, field, id_field, split
+from talika import ColumnTable, TableFields, discriminator, field, id_field, split
 
 
 class ArticleFields(TableFields):
@@ -141,7 +141,7 @@ The explicit form remains available when projects want to name and define the
 variant schema classes directly:
 
 ```python
-from bdd_tablex import ColumnTable, discriminator_field, field, id_field, split
+from talika import ColumnTable, discriminator_field, field, id_field, split
 
 
 class ContentTable(ColumnTable):
@@ -233,7 +233,7 @@ reusable field parser. The package owns dispatch; your project owns every
 meaning.
 
 ```python
-from bdd_tablex import CellDSL
+from talika import CellDSL
 
 content_cells = CellDSL()
 
@@ -352,7 +352,7 @@ def validate_record(self, context):
         raise ValueError(f"Unsupported role: {self.role}")
 ```
 
-Failures become `BDDTableError` instances with the source row, or the item
+Failures become `TableError` instances with the source row, or the item
 column and ID for column-oriented tables. See
 [`examples/record_validation`](examples/record_validation) and
 [`examples/context_validation`](examples/context_validation) for separate,
@@ -370,7 +370,7 @@ record.source_for("headline")
 ```
 
 The metadata is immutable and uses schema attribute names for field lookup.
-It enables project validators to raise precise `BDDTableError.from_cell()`
+It enables project validators to raise precise `TableError.from_cell()`
 errors. See [`examples/record_sources`](examples/record_sources).
 
 ## Whole-table validation
@@ -409,7 +409,7 @@ class UserTable(RowTable):
 
 Dataclasses and other keyword-constructed classes need no integration
 dependency. Pydantic v2 uses the same contract through the optional
-`bdd-tablex[pydantic]` extra. See [`examples/output_models`](examples/output_models)
+`talika[pydantic]` extra. See [`examples/output_models`](examples/output_models)
 and [`examples/pydantic_output`](examples/pydantic_output).
 
 Override `build_output(record, context)` when construction needs a custom
@@ -424,12 +424,12 @@ errors from several cells or records:
 ```python
 try:
     ContentTable.parse(datatable, error_mode="collect")
-except BDDTableErrors as errors:
+except TableErrors as errors:
     for error in errors:
         print(error.code, error.row, error.column, error.message)
 ```
 
-Every `BDDTableError` has a stable string `code`. Collection stops before
+Every `TableError` has a stable string `code`. Collection stops before
 dependent reference or table validation when earlier failures make those
 stages unreliable. See [`examples/collected_errors`](examples/collected_errors).
 
@@ -484,7 +484,7 @@ group of items, configure `ColumnGroupExpander` with explicit range and repeat
 rules:
 
 ```python
-from bdd_tablex import (
+from talika import (
     ColumnGroupExpander,
     NumericRange,
     PrefixRepeat,
@@ -582,11 +582,11 @@ The following examples show both reusable and fully replaceable conventions:
 
 ## pytest fixture
 
-Installing the package registers a `bdd_table` fixture:
+Installing the package registers a `talika` fixture:
 
 ```python
-def content_exists(datatable, bdd_table, faker):
-    return bdd_table.parse(
+def content_exists(datatable, talika, faker):
+    return talika.parse(
         datatable,
         schema=ContentTable,
         context={"faker": faker},
@@ -597,13 +597,13 @@ The fixture also exposes `parse_records()` for type-checker-friendly schema
 records:
 
 ```python
-def content_exists(datatable, bdd_table):
-    records = bdd_table.parse_records(datatable, schema=ContentTable)
+def content_exists(datatable, talika):
+    records = talika.parse_records(datatable, schema=ContentTable)
     assert records[0].headline
 ```
 
 Most users should start with `Schema.parse()`. Use `parse_table()` when a
-functional parser call reads better. Use the `bdd_table` fixture when pytest
+functional parser call reads better. Use the `talika` fixture when pytest
 dependency injection keeps a step definition cleaner.
 
 ## Static feature checking
@@ -612,8 +612,8 @@ Install the optional CLI extra to validate feature tables without executing
 pytest scenarios:
 
 ```powershell
-pip install "bdd-tablex[cli]"
-bdd-tablex check features/content.feature `
+pip install "talika[cli]"
+talika check features/content.feature `
   --schema tests/support/content_schema.py:ContentTable `
   --step "the following content exists:"
 ```
@@ -621,7 +621,7 @@ bdd-tablex check features/content.feature `
 Machine-readable diagnostics are available for CI and editor integrations:
 
 ```powershell
-bdd-tablex check features/content.feature `
+talika check features/content.feature `
   --schema tests/support/content_schema.py:ContentTable `
   --step "the following content exists:" `
   --format json
@@ -630,8 +630,8 @@ bdd-tablex check features/content.feature `
 Use `describe` to inspect a schema without parsing a feature file:
 
 ```powershell
-bdd-tablex describe tests/support/content_schema.py:ContentTable
-bdd-tablex describe tests/support/content_schema.py:ContentTable --format json
+talika describe tests/support/content_schema.py:ContentTable
+talika describe tests/support/content_schema.py:ContentTable --format json
 ```
 
 The checker uses the official Gherkin parser and reports exact feature-file

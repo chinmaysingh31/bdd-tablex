@@ -19,10 +19,10 @@ from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, cast, get_type_hints
 from .annotations import parser_for_annotation
 from .context import CellContext, DefaultContext, ParseContext
 from .errors import (
-    BDDTableError,
-    BDDTableErrorCode,
-    BDDTableErrors,
     SchemaDefinitionError,
+    TableError,
+    TableErrorCode,
+    TableErrors,
 )
 from .fields import MISSING, Field
 from .records import TableRecord
@@ -423,7 +423,7 @@ class BaseTable(TableRecord, TableFields):
             context: Parse context for the current operation.
 
         Raises:
-            BDDTableError: For custom source-aware diagnostics.
+            TableError: For custom source-aware diagnostics.
             Exception: Any other exception is wrapped as a record validation
                 failure.
 
@@ -447,7 +447,7 @@ class BaseTable(TableRecord, TableFields):
             context: Parse context for the current operation.
 
         Raises:
-            BDDTableError: For custom source-aware diagnostics.
+            TableError: For custom source-aware diagnostics.
             Exception: Any other exception is wrapped as a table validation
                 failure.
 
@@ -517,7 +517,7 @@ class BaseTable(TableRecord, TableFields):
         """Validate discriminator and variant declarations before parsing.
 
         Raises:
-            BDDTableError: If variants lack exactly one inherited discriminator
+            TableError: If variants lack exactly one inherited discriminator
                 or replace the base discriminator field.
 
         !!! info
@@ -535,7 +535,7 @@ class BaseTable(TableRecord, TableFields):
             if declared.is_discriminator
         ]
         if len(discriminators) != 1:
-            raise BDDTableError(
+            raise TableError(
                 "Schemas with registered variants require exactly one "
                 "discriminator_field",
                 schema=cls,
@@ -550,13 +550,13 @@ class BaseTable(TableRecord, TableFields):
                 if declared.is_discriminator
             ]
             if len(variant_discriminators) != 1:
-                raise BDDTableError(
+                raise TableError(
                     "Each variant must inherit the base discriminator_field",
                     schema=variant_cls,
                 )
             name, declared = variant_discriminators[0]
             if name != discriminator_name or declared.label != discriminator.label:
-                raise BDDTableError(
+                raise TableError(
                     "Variants cannot replace the base discriminator_field",
                     schema=variant_cls,
                     field=declared.label,
@@ -632,7 +632,7 @@ class BaseTable(TableRecord, TableFields):
     def _validate_table_labels(
         cls,
         label_cells: Sequence[TableCell],
-        errors: list[BDDTableError] | None = None,
+        errors: list[TableError] | None = None,
     ) -> None:
         """Validate unknown labels and canonical/alias duplication.
 
@@ -642,7 +642,7 @@ class BaseTable(TableRecord, TableFields):
             errors: Optional collection sink for recoverable diagnostics.
 
         Raises:
-            BDDTableError: In fail-fast mode when an invalid label is found.
+            TableError: In fail-fast mode when an invalid label is found.
 
         !!! info
             Canonical/alias duplication is checked per schema and per variant
@@ -655,12 +655,12 @@ class BaseTable(TableRecord, TableFields):
             if cell.value in accepted:
                 continue
             cls._report(
-                BDDTableError.from_cell(
+                TableError.from_cell(
                     "Unknown field label",
                     cell,
                     schema=cls,
                     field=cell.value,
-                    code=BDDTableErrorCode.UNKNOWN_FIELD,
+                    code=TableErrorCode.UNKNOWN_FIELD,
                     hint="Use one of the schema field labels or aliases.",
                 ),
                 errors,
@@ -680,12 +680,12 @@ class BaseTable(TableRecord, TableFields):
                     if previous_label == cell.value:
                         continue
                     cls._report(
-                        BDDTableError.from_cell(
+                        TableError.from_cell(
                             "Table contains both a field label and one of its aliases",
                             cell,
                             schema=cls,
                             field=declared.label,
-                            code=BDDTableErrorCode.DUPLICATE_LABEL,
+                            code=TableErrorCode.DUPLICATE_LABEL,
                             hint=(
                                 "Use either the canonical label or one alias, not "
                                 "both in the same table."
@@ -702,7 +702,7 @@ class BaseTable(TableRecord, TableFields):
         *,
         parse_context: ParseContext,
         item_id: Any | None,
-        errors: list[BDDTableError] | None = None,
+        errors: list[TableError] | None = None,
     ) -> tuple[type[BaseTable] | None, dict[str, Any]]:
         """Select one record schema and return parsed selector values.
 
@@ -746,13 +746,13 @@ class BaseTable(TableRecord, TableFields):
             if cell is None:
                 raise RuntimeError("A required discriminator must have a cell") from exc
             choices = ", ".join(repr(choice) for choice in cls.__variants__)
-            error = BDDTableError.from_cell(
+            error = TableError.from_cell(
                 f"Unknown variant {value!r}; expected one of: {choices}",
                 cell,
                 schema=cls,
                 field=declared.label,
                 item_id=item_id,
-                code=BDDTableErrorCode.UNKNOWN_VARIANT,
+                code=TableErrorCode.UNKNOWN_VARIANT,
                 hint="Use a discriminator value registered on this schema.",
             )
             error.__cause__ = exc
@@ -767,7 +767,7 @@ class BaseTable(TableRecord, TableFields):
         cells_by_label: Mapping[str, TableCell],
         *,
         item_id: Any | None,
-        errors: list[BDDTableError] | None = None,
+        errors: list[TableError] | None = None,
     ) -> dict[str, Any]:
         """Apply policy to values belonging to another selected variant.
 
@@ -807,13 +807,13 @@ class BaseTable(TableRecord, TableFields):
             if cls.inapplicable_fields == "preserve":
                 extras[label] = cell.value
                 continue
-            error = BDDTableError.from_cell(
+            error = TableError.from_cell(
                 f"Field does not apply to variant {record_cls.__variant_value__!r}",
                 cell,
                 schema=record_cls,
                 field=label,
                 item_id=item_id,
-                code=BDDTableErrorCode.INAPPLICABLE_FIELD,
+                code=TableErrorCode.INAPPLICABLE_FIELD,
                 hint=(
                     "Move this value to a record with the matching variant, leave "
                     "the cell empty, or change inapplicable_fields policy."
@@ -835,20 +835,20 @@ class BaseTable(TableRecord, TableFields):
             A ``ParseContext`` instance.
 
         Raises:
-            BDDTableError: If the context cannot be treated as a mapping.
+            TableError: If the context cannot be treated as a mapping.
 
         !!! info
-            Wrapping context errors in ``BDDTableError`` keeps public parse
+            Wrapping context errors in ``TableError`` keeps public parse
             failures consistent with table diagnostics.
 
         """
         try:
             return ParseContext.from_value(context)
         except (TypeError, ValueError) as exc:
-            raise BDDTableError(
+            raise TableError(
                 "Context must be a mapping",
                 schema=cls,
-                code=BDDTableErrorCode.INVALID_CONTEXT,
+                code=TableErrorCode.INVALID_CONTEXT,
             ) from exc
 
     @classmethod
@@ -871,8 +871,8 @@ class BaseTable(TableRecord, TableFields):
 
     @staticmethod
     def _report(
-        error: BDDTableError,
-        errors: list[BDDTableError] | None,
+        error: TableError,
+        errors: list[TableError] | None,
     ) -> object:
         """Raise immediately or append one recoverable diagnostic.
 
@@ -884,7 +884,7 @@ class BaseTable(TableRecord, TableFields):
             Internal invalid sentinel when the error is collected.
 
         Raises:
-            BDDTableError: In fail-fast mode.
+            TableError: In fail-fast mode.
 
         !!! info
             Returning a sentinel lets parsing continue safely while skipping
@@ -897,14 +897,14 @@ class BaseTable(TableRecord, TableFields):
         return _INVALID
 
     @staticmethod
-    def _raise_collected(errors: list[BDDTableError] | None) -> None:
+    def _raise_collected(errors: list[TableError] | None) -> None:
         """Raise the public aggregate after all safe validation has run.
 
         Args:
             errors: Optional collected diagnostic list.
 
         Raises:
-            BDDTableErrors: If ``errors`` contains one or more diagnostics.
+            TableErrors: If ``errors`` contains one or more diagnostics.
 
         !!! warning
             Dependent lifecycle stages stop after collected structural errors
@@ -912,7 +912,7 @@ class BaseTable(TableRecord, TableFields):
 
         """
         if errors:
-            raise BDDTableErrors(errors)
+            raise TableErrors(errors)
 
     @classmethod
     def _prepare_table(
@@ -930,7 +930,7 @@ class BaseTable(TableRecord, TableFields):
             Transformed source-aware table.
 
         Raises:
-            BDDTableError: If raw or transformed tables are empty, the
+            TableError: If raw or transformed tables are empty, the
                 transformer fails, or the transformer returns a non-TableData
                 value.
 
@@ -944,20 +944,20 @@ class BaseTable(TableRecord, TableFields):
 
         try:
             transformed = cls.transform_table(source_table, parse_context)
-        except BDDTableError:
+        except TableError:
             raise
         except Exception as exc:
-            raise BDDTableError(
+            raise TableError(
                 f"Table transformation failed: {exc}",
                 schema=cls,
-                code=BDDTableErrorCode.TRANSFORM_FAILED,
+                code=TableErrorCode.TRANSFORM_FAILED,
             ) from exc
 
         if not isinstance(transformed, TableData):
-            raise BDDTableError(
+            raise TableError(
                 "Table transformation must return TableData",
                 schema=cls,
-                code=BDDTableErrorCode.INVALID_TRANSFORM,
+                code=TableErrorCode.INVALID_TRANSFORM,
             )
 
         cls._check_table(transformed)
@@ -968,7 +968,7 @@ class BaseTable(TableRecord, TableFields):
         """Validate canonical schema labels.
 
         Raises:
-            BDDTableError: If two fields on the same schema declare the same
+            TableError: If two fields on the same schema declare the same
                 canonical label.
 
         !!! warning
@@ -979,7 +979,7 @@ class BaseTable(TableRecord, TableFields):
         labels: dict[str, str] = {}
         for name, declared in cls.__fields__.items():
             if declared.label in labels:
-                raise BDDTableError(
+                raise TableError(
                     "Schema contains duplicate field labels",
                     schema=cls,
                     field=declared.label,
@@ -995,7 +995,7 @@ class BaseTable(TableRecord, TableFields):
         cell: TableCell | None,
         parse_context: ParseContext,
         item_id: Any | None,
-        errors: list[BDDTableError] | None = None,
+        errors: list[TableError] | None = None,
     ) -> Any:
         """Resolve one declared field from a present or missing cell.
 
@@ -1014,7 +1014,7 @@ class BaseTable(TableRecord, TableFields):
         Raises:
             RuntimeError: If callers mark a field present without passing a
                 source cell.
-            BDDTableError: In fail-fast mode for missing/empty/parser failures.
+            TableError: In fail-fast mode for missing/empty/parser failures.
 
         !!! warning
             Missing optional fields and explicit empty cells are distinct.
@@ -1024,12 +1024,12 @@ class BaseTable(TableRecord, TableFields):
         if not present:
             if declared.required:
                 return cls._report(
-                    BDDTableError(
+                    TableError(
                         "Required field is missing from the table",
                         schema=cls,
                         field=declared.label,
                         item_id=item_id,
-                        code=BDDTableErrorCode.MISSING_REQUIRED,
+                        code=TableErrorCode.MISSING_REQUIRED,
                         hint=(
                             "Add this field to the table, or make the schema field "
                             "optional if the project should supply it."
@@ -1051,12 +1051,12 @@ class BaseTable(TableRecord, TableFields):
                     )
                     return factory(factory_context)
                 except Exception as exc:
-                    error = BDDTableError(
+                    error = TableError(
                         f"Default factory failed: {exc}",
                         schema=cls,
                         field=declared.label,
                         item_id=item_id,
-                        code=BDDTableErrorCode.DEFAULT_FACTORY_FAILED,
+                        code=TableErrorCode.DEFAULT_FACTORY_FAILED,
                     )
                     error.__cause__ = exc
                     return cls._report(
@@ -1071,13 +1071,13 @@ class BaseTable(TableRecord, TableFields):
         if cell.value == "":
             if declared.required and not declared.parse_empty:
                 return cls._report(
-                    BDDTableError.from_cell(
+                    TableError.from_cell(
                         "Required field has an empty value",
                         cell,
                         schema=cls,
                         field=declared.label,
                         item_id=item_id,
-                        code=BDDTableErrorCode.EMPTY_REQUIRED,
+                        code=TableErrorCode.EMPTY_REQUIRED,
                         hint=(
                             "Fill the cell, or remove required=True if an explicit "
                             "empty value should be valid."
@@ -1089,13 +1089,13 @@ class BaseTable(TableRecord, TableFields):
                 return None
             if not declared.required and declared.empty == "error":
                 return cls._report(
-                    BDDTableError.from_cell(
+                    TableError.from_cell(
                         "Optional field has an empty value",
                         cell,
                         schema=cls,
                         field=declared.label,
                         item_id=item_id,
-                        code=BDDTableErrorCode.EMPTY_OPTIONAL,
+                        code=TableErrorCode.EMPTY_OPTIONAL,
                         hint=(
                             "Fill the cell, omit the field, or choose a different "
                             "empty-cell policy for this schema field."
@@ -1122,13 +1122,13 @@ class BaseTable(TableRecord, TableFields):
         try:
             return declared.parser(cell.value, cell_context)
         except Exception as exc:
-            error = BDDTableError.from_cell(
+            error = TableError.from_cell(
                 f"Field parser failed: {exc}",
                 cell,
                 schema=cls,
                 field=declared.label,
                 item_id=item_id,
-                code=BDDTableErrorCode.PARSER_FAILED,
+                code=TableErrorCode.PARSER_FAILED,
                 hint="Check the cell value or adjust the field parser for this syntax.",
             )
             error.__cause__ = exc
@@ -1145,7 +1145,7 @@ class BaseTable(TableRecord, TableFields):
             table: Source-aware table to validate.
 
         Raises:
-            BDDTableError: If the table or its label row/column is empty.
+            TableError: If the table or its label row/column is empty.
 
         !!! info
             Orientation-specific parsers perform rectangularity checks after
@@ -1153,18 +1153,18 @@ class BaseTable(TableRecord, TableFields):
 
         """
         if not table.rows:
-            raise BDDTableError(
+            raise TableError(
                 "Table is empty",
                 schema=cls,
-                code=BDDTableErrorCode.TABLE_EMPTY,
+                code=TableErrorCode.TABLE_EMPTY,
                 hint="Provide at least a header row with field labels.",
             )
         if not table.rows[0]:
-            raise BDDTableError(
+            raise TableError(
                 "Table header is empty",
                 schema=cls,
                 row=1,
-                code=BDDTableErrorCode.HEADER_EMPTY,
+                code=TableErrorCode.HEADER_EMPTY,
                 hint="Provide field labels in the first row or first column.",
             )
 
@@ -1172,7 +1172,7 @@ class BaseTable(TableRecord, TableFields):
     def _reject_duplicates(
         cls,
         label_cells: Sequence[TableCell],
-        errors: list[BDDTableError] | None = None,
+        errors: list[TableError] | None = None,
     ) -> None:
         """Reject repeated table labels using original source locations.
 
@@ -1181,7 +1181,7 @@ class BaseTable(TableRecord, TableFields):
             errors: Optional collection sink for recoverable diagnostics.
 
         Raises:
-            BDDTableError: In fail-fast mode when a duplicate is found.
+            TableError: In fail-fast mode when a duplicate is found.
 
         !!! warning
             Duplicate labels are rejected before field lookup because otherwise
@@ -1194,12 +1194,12 @@ class BaseTable(TableRecord, TableFields):
             label = cell.value
             if label in seen:
                 cls._report(
-                    BDDTableError.from_cell(
+                    TableError.from_cell(
                         "Table contains a duplicate field label",
                         cell,
                         schema=cls,
                         field=label,
-                        code=BDDTableErrorCode.DUPLICATE_LABEL,
+                        code=TableErrorCode.DUPLICATE_LABEL,
                         hint="Keep only one row or column for this field label.",
                     ),
                     errors,
@@ -1210,7 +1210,7 @@ class BaseTable(TableRecord, TableFields):
     def _validate_required_presence(
         cls,
         labels: Sequence[str],
-        errors: list[BDDTableError] | None = None,
+        errors: list[TableError] | None = None,
     ) -> None:
         """Validate required fields when a table contains no records.
 
@@ -1219,7 +1219,7 @@ class BaseTable(TableRecord, TableFields):
             errors: Optional collection sink for recoverable diagnostics.
 
         Raises:
-            BDDTableError: In fail-fast mode when a required field is absent.
+            TableError: In fail-fast mode when a required field is absent.
 
         !!! info
             Normal record parsing reports missing required fields per record.
@@ -1230,11 +1230,11 @@ class BaseTable(TableRecord, TableFields):
         for declared in cls.__fields__.values():
             if declared.required and not present.intersection(declared.labels):
                 cls._report(
-                    BDDTableError(
+                    TableError(
                         "Required field is missing from the table",
                         schema=cls,
                         field=declared.label,
-                        code=BDDTableErrorCode.MISSING_REQUIRED,
+                        code=TableErrorCode.MISSING_REQUIRED,
                         hint=(
                             "Add this field to the table, or make the schema field "
                             "optional if the project should supply it."
@@ -1251,7 +1251,7 @@ class BaseTable(TableRecord, TableFields):
         *,
         parse_context: ParseContext,
         item_id: Any | None,
-        errors: list[BDDTableError] | None = None,
+        errors: list[TableError] | None = None,
         parsed_values: Mapping[str, Any] | None = None,
         parsed_sources: Mapping[str, TableCell] | None = None,
     ) -> tuple[bool, dict[str, Any], dict[str, TableCell], Any | None]:
@@ -1328,7 +1328,7 @@ class BaseTable(TableRecord, TableFields):
         cls,
         records: list[BaseTable],
         parse_context: ParseContext,
-        errors: list[BDDTableError] | None = None,
+        errors: list[TableError] | None = None,
         *,
         convert_output: bool = True,
     ) -> list[Any]:
@@ -1344,9 +1344,9 @@ class BaseTable(TableRecord, TableFields):
             Schema records or converted output objects.
 
         Raises:
-            BDDTableError: In fail-fast mode for reference, validation, or
+            TableError: In fail-fast mode for reference, validation, or
                 output failures.
-            BDDTableErrors: In collect mode when diagnostics were collected.
+            TableErrors: In collect mode when diagnostics were collected.
 
         !!! warning
             Dependent lifecycle stages run only after structural parse errors
@@ -1362,7 +1362,7 @@ class BaseTable(TableRecord, TableFields):
         references_valid = True
         try:
             cls._resolve_references(records, parse_context)
-        except BDDTableError as exc:
+        except TableError as exc:
             cls._report(exc, errors)
             references_valid = False
 
@@ -1371,18 +1371,18 @@ class BaseTable(TableRecord, TableFields):
             record_cls = type(record)
             try:
                 record.validate_record(parse_context)
-            except BDDTableError as exc:
+            except TableError as exc:
                 if errors is None:
                     raise
                 errors.append(exc)
             except Exception as exc:
-                error = BDDTableError(
+                error = TableError(
                     f"Record validation failed: {exc}",
                     schema=record_cls,
                     row=source.row,
                     column=source.column,
                     item_id=source.item_id,
-                    code=BDDTableErrorCode.RECORD_VALIDATION_FAILED,
+                    code=TableErrorCode.RECORD_VALIDATION_FAILED,
                 )
                 error.__cause__ = exc
                 cls._report(
@@ -1393,13 +1393,13 @@ class BaseTable(TableRecord, TableFields):
         if references_valid:
             try:
                 cls.validate_records(records, parse_context)
-            except BDDTableError as exc:
+            except TableError as exc:
                 cls._report(exc, errors)
             except Exception as exc:
-                error = BDDTableError(
+                error = TableError(
                     f"Table validation failed: {exc}",
                     schema=cls,
-                    code=BDDTableErrorCode.TABLE_VALIDATION_FAILED,
+                    code=TableErrorCode.TABLE_VALIDATION_FAILED,
                 )
                 error.__cause__ = exc
                 cls._report(
@@ -1424,13 +1424,13 @@ class BaseTable(TableRecord, TableFields):
                 subject = (
                     "Output model" if record_cls.output_model else "Output builder"
                 )
-                error = BDDTableError(
+                error = TableError(
                     f"{subject} {target_name} rejected the record: {exc}",
                     schema=record_cls,
                     row=source.row,
                     column=source.column,
                     item_id=source.item_id,
-                    code=BDDTableErrorCode.OUTPUT_FAILED,
+                    code=TableErrorCode.OUTPUT_FAILED,
                 )
                 error.__cause__ = exc
                 cls._report(error, errors)
@@ -1450,7 +1450,7 @@ class BaseTable(TableRecord, TableFields):
             parse_context: Parse context for the current operation.
 
         Raises:
-            BDDTableError: If reference targets are missing, duplicate, or
+            TableError: If reference targets are missing, duplicate, or
                 cannot be converted to the target key type.
 
         !!! info
@@ -1483,20 +1483,20 @@ class BaseTable(TableRecord, TableFields):
                     if target_value in index:
                         target_declared = type(record).__fields__[spec.target]
                         cell = record.source_for(spec.target)
-                        raise BDDTableError.from_cell(
+                        raise TableError.from_cell(
                             f"Reference target {target_value!r} is not unique",
                             cell,
                             schema=type(record),
                             field=target_declared.label,
-                            code=BDDTableErrorCode.REFERENCE_FAILED,
+                            code=TableErrorCode.REFERENCE_FAILED,
                         )
                     index[target_value] = record
                 if not index:
-                    raise BDDTableError(
+                    raise TableError(
                         f"Reference target field {spec.target!r} is not declared",
                         schema=type(source_record),
                         field=declared.label,
-                        code=BDDTableErrorCode.REFERENCE_FAILED,
+                        code=TableErrorCode.REFERENCE_FAILED,
                     )
                 indexes[spec.target] = index
 
@@ -1531,13 +1531,13 @@ class BaseTable(TableRecord, TableFields):
                         resolved.append(indexes[spec.target][key])
                     except KeyError as exc:
                         cell = record.source_for(name)
-                        raise BDDTableError.from_cell(
+                        raise TableError.from_cell(
                             f"Reference target {key!r} was not found",
                             cell,
                             schema=cls,
                             field=declared.label,
                             item_id=record.table_source.item_id,
-                            code=BDDTableErrorCode.REFERENCE_FAILED,
+                            code=TableErrorCode.REFERENCE_FAILED,
                         ) from exc
                 setattr(record, name, resolved if spec.many else resolved[0])
 
@@ -1565,7 +1565,7 @@ class BaseTable(TableRecord, TableFields):
             key when the target field has no parser.
 
         Raises:
-            BDDTableError: If target-key conversion fails.
+            TableError: If target-key conversion fails.
 
         !!! warning
             The source cell for the reference field is used in diagnostics, not
@@ -1589,13 +1589,13 @@ class BaseTable(TableRecord, TableFields):
         try:
             return target_field.parser(value, cell_context)
         except Exception as exc:
-            raise BDDTableError.from_cell(
+            raise TableError.from_cell(
                 f"Reference key conversion failed: {exc}",
                 source_cell,
                 schema=type(source_record),
                 field=type(source_record).__fields__[source_field].label,
                 item_id=source_record.table_source.item_id,
-                code=BDDTableErrorCode.REFERENCE_FAILED,
+                code=TableErrorCode.REFERENCE_FAILED,
             ) from exc
 
 
@@ -1696,9 +1696,9 @@ class RowTable(BaseTable):
             Parsed records or converted output objects.
 
         Raises:
-            BDDTableError: In fail-fast mode for structural, parsing, or
+            TableError: In fail-fast mode for structural, parsing, or
                 lifecycle failures.
-            BDDTableErrors: In collect mode when recoverable diagnostics were
+            TableErrors: In collect mode when recoverable diagnostics were
                 collected.
 
         !!! warning
@@ -1708,7 +1708,7 @@ class RowTable(BaseTable):
 
         """
         cls._validate_error_mode(error_mode)
-        errors: list[BDDTableError] | None = [] if error_mode == "collect" else None
+        errors: list[TableError] | None = [] if error_mode == "collect" else None
         parse_context = cls._parse_context(context)
         table = cls._prepare_table(datatable, parse_context)
         cls._validate_variant_configuration()
@@ -1729,12 +1729,12 @@ class RowTable(BaseTable):
             if len(row_cells) != len(headers):
                 source_row = row_cells[0].source_row if row_cells else row_number
                 cls._report(
-                    BDDTableError(
+                    TableError(
                         f"Ragged row: expected {len(headers)} cells, "
                         f"got {len(row_cells)}",
                         schema=cls,
                         row=source_row,
-                        code=BDDTableErrorCode.RAGGED_ROW,
+                        code=TableErrorCode.RAGGED_ROW,
                         hint=(
                             "Make every data row contain the same number of cells "
                             "as the header row."
@@ -1904,8 +1904,8 @@ class ColumnTable(BaseTable):
             Parsed records or converted output objects.
 
         Raises:
-            BDDTableError: For structural, ID, parsing, or lifecycle failures.
-            BDDTableErrors: In collect mode when recoverable diagnostics were
+            TableError: For structural, ID, parsing, or lifecycle failures.
+            TableErrors: In collect mode when recoverable diagnostics were
                 collected.
 
         !!! warning
@@ -1914,13 +1914,13 @@ class ColumnTable(BaseTable):
 
         """
         cls._validate_error_mode(error_mode)
-        errors: list[BDDTableError] | None = [] if error_mode == "collect" else None
+        errors: list[TableError] | None = [] if error_mode == "collect" else None
         parse_context = cls._parse_context(context)
         table = cls._prepare_table(datatable, parse_context)
         cls._validate_variant_configuration()
         id_fields = [field for field in cls.__fields__.values() if field.is_id]
         if len(id_fields) != 1:
-            raise BDDTableError(
+            raise TableError(
                 "ColumnTable schemas require exactly one id_field",
                 schema=cls,
                 hint="Declare exactly one field with id_field(...).",
@@ -1930,7 +1930,7 @@ class ColumnTable(BaseTable):
         width = len(table.rows[0])
         id_label_cell = table.rows[0][0]
         if id_label_cell.value not in id_declared.labels:
-            raise BDDTableError.from_cell(
+            raise TableError.from_cell(
                 "The first row must be the declared id field",
                 id_label_cell,
                 schema=cls,
@@ -1941,11 +1941,11 @@ class ColumnTable(BaseTable):
             if len(row_cells) != width:
                 source_row = row_cells[0].source_row if row_cells else row_number
                 cls._report(
-                    BDDTableError(
+                    TableError(
                         f"Ragged row: expected {width} cells, got {len(row_cells)}",
                         schema=cls,
                         row=source_row,
-                        code=BDDTableErrorCode.RAGGED_ROW,
+                        code=TableErrorCode.RAGGED_ROW,
                         hint=(
                             "Make every table row contain the same number of cells "
                             "as the ID row."
@@ -1977,13 +1977,13 @@ class ColumnTable(BaseTable):
                 continue
             if item_id in seen_ids:
                 cls._report(
-                    BDDTableError.from_cell(
+                    TableError.from_cell(
                         "Duplicate item ID",
                         id_cell,
                         schema=cls,
                         field=id_declared.label,
                         item_id=item_id,
-                        code=BDDTableErrorCode.DUPLICATE_ID,
+                        code=TableErrorCode.DUPLICATE_ID,
                         hint="Use one unique item ID per parsed column.",
                     ),
                     errors,

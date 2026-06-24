@@ -1,7 +1,7 @@
 """Reusable field parsers and parser-composition helpers.
 
 Every parser follows the same callable contract used by ``field(parser=...)``:
-it accepts the current value and a :class:`~bdd_tablex.CellContext`. Parser
+it accepts the current value and a :class:`~talika.CellContext`. Parser
 factories return plain callable objects, so projects can use them directly,
 compose them, or mix them with custom functions.
 
@@ -115,7 +115,7 @@ def integer(*, base: int = 10) -> Parser:
             ValueError: If the value cannot be parsed as an integer.
 
         !!! info
-            Schema parsing wraps this failure in ``BDDTableError`` so callers
+            Schema parsing wraps this failure in ``TableError`` so callers
             receive the field and source-cell location.
 
         """
@@ -442,7 +442,7 @@ def compose(*parsers: Parser) -> Parser:
     """Run parsers left-to-right.
 
     Args:
-        *parsers: Parser callables following the bdd-tablex parser contract.
+        *parsers: Parser callables following the talika parser contract.
 
     Returns:
         A parser that feeds each result into the next parser.

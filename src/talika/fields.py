@@ -5,7 +5,7 @@ describe how BDD table labels map to Python attributes, which values are
 required, and how raw cell text should be converted.
 
 !!! info
-    Labels are literal project vocabulary. ``bdd-tablex`` does not infer
+    Labels are literal project vocabulary. ``talika`` does not infer
     meaning from characters such as ``*`` unless the schema explicitly sets
     options such as ``required=True``.
 """
@@ -380,7 +380,7 @@ def discriminator(
     """Declare a discriminator and variant field components together.
 
     ``variants`` maps parsed discriminator values to ``TableFields``
-    subclasses. When the containing table schema is created, bdd-tablex
+    subclasses. When the containing table schema is created, talika
     composes each component with that schema and registers the resulting
     record variant automatically.
 

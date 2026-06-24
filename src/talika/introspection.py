@@ -1,7 +1,7 @@
 """Immutable, machine-readable descriptions of table schema contracts.
 
 The objects in this module are returned by ``Table.describe()`` and power the
-``bdd-tablex describe`` command. They intentionally contain only serializable
+``talika describe`` command. They intentionally contain only serializable
 or easily renderable metadata.
 
 !!! info
@@ -198,7 +198,7 @@ def describe_schema(schema: Any) -> TableContract:
 
     !!! warning
         This function trusts that ``schema`` has already been created by the
-        bdd-tablex metaclass. Use ``Table.describe()`` for the public API.
+        talika metaclass. Use ``Table.describe()`` for the public API.
 
     """
     orientation = (

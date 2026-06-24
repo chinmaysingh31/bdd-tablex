@@ -1,6 +1,6 @@
 import pytest
 
-from bdd_tablex import BDDTableError, ColumnTable, RowTable, field, id_field
+from talika import ColumnTable, RowTable, TableError, field, id_field
 
 
 class SimpleRows(RowTable):
@@ -23,7 +23,7 @@ class SimpleColumns(ColumnTable):
     ],
 )
 def test_row_table_shape_errors(datatable, message):
-    with pytest.raises(BDDTableError, match=message):
+    with pytest.raises(TableError, match=message):
         SimpleRows.parse(datatable)
 
 
@@ -36,5 +36,5 @@ def test_row_table_shape_errors(datatable, message):
     ],
 )
 def test_column_table_shape_errors(datatable, message):
-    with pytest.raises(BDDTableError, match=message):
+    with pytest.raises(TableError, match=message):
         SimpleColumns.parse(datatable)

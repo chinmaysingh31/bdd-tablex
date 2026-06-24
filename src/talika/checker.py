@@ -1,8 +1,8 @@
-"""Static validation of Gherkin data tables against bdd-tablex schemas.
+"""Static validation of Gherkin data tables against talika schemas.
 
 The Gherkin dependency is imported lazily so normal runtime parsing remains
 dependency-free. Install the ``cli`` extra when using feature-file discovery
-or the ``bdd-tablex check`` command.
+or the ``talika check`` command.
 
 !!! info
     Static checking still runs schema parsers and validators. Supply
@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .errors import BDDTableError, BDDTableErrors
+from .errors import TableError, TableErrors
 from .schema import BaseTable
 from .table import TableCell, TableData
 
@@ -59,7 +59,7 @@ class FeatureDiagnostic:
 
     !!! info
         CLI JSON output is a rendering of this object plus the nested
-        ``BDDTableError`` attributes.
+        ``TableError`` attributes.
 
     """
 
@@ -67,7 +67,7 @@ class FeatureDiagnostic:
     feature: str
     scenario: str
     step: str
-    error: BDDTableError
+    error: TableError
 
 
 def _gherkin_parser() -> Any:
@@ -88,7 +88,7 @@ def _gherkin_parser() -> Any:
         from gherkin.parser import Parser  # type: ignore[import-untyped]
     except ImportError as exc:
         raise RuntimeError(
-            "Feature checking requires the 'cli' extra: pip install 'bdd-tablex[cli]'"
+            "Feature checking requires the 'cli' extra: pip install 'talika[cli]'"
         ) from exc
     return Parser
 
@@ -267,9 +267,9 @@ def check_feature_tables(
                 context=context,
                 error_mode="collect",
             )
-        except BDDTableErrors as exc:
+        except TableErrors as exc:
             errors = exc.errors
-        except BDDTableError as exc:
+        except TableError as exc:
             errors = (exc,)
         else:
             errors = ()

@@ -1,7 +1,7 @@
 import pydantic
 import pytest
 
-from bdd_tablex import BDDTableError, RowTable, field
+from talika import RowTable, TableError, field
 
 
 class UserModel(pydantic.BaseModel):
@@ -28,7 +28,7 @@ def test_pydantic_validation_errors_keep_record_location():
         name: str = field("name")
         age: int = field("age")
 
-    with pytest.raises(BDDTableError, match="greater than or equal to 18") as error:
+    with pytest.raises(TableError, match="greater than or equal to 18") as error:
         UserTable.parse([["name", "age"], ["Alice", "16"]])
 
     assert error.value.row == 2

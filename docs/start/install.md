@@ -8,25 +8,27 @@ Talika supports Python 3.10 and newer.
 
 The core package has no runtime dependencies:
 
-```bash
-pip install talika
+```bash { .talika-terminal .speed-1 title="Install Talika" }
+$ pip install talika
 ```
-
+```bash { .talika-terminal .speed-1 title="Install Talika" }
+$ pip install talika
+```
 ## Optional extras
 
 Install only the integrations you use:
 
-```bash
-pip install "talika[cli]"       # talika check and feature-file discovery
-pip install "talika[pydantic]"  # Pydantic v2 output models
-pip install "talika[test]"      # project test dependencies
+```bash { .talika-terminal .speed-3}
+$ pip install "talika[cli]"       # talika check and feature-file discovery
+$ pip install "talika[pydantic]"  # Pydantic v2 output models
+$ pip install "talika[test]"      # project test dependencies
 ```
 
 The command line interface is available as:
 
-```bash
-talika --help
-python -m talika --help
+```bash { .talika-terminal .speed-2 title="Check CLI Entrypoints" }
+$ talika --help
+$ python -m talika --help
 ```
 
 ## What gets installed
@@ -38,12 +40,12 @@ does not depend on it.
 Use the CLI extra when you want to validate `.feature` files without running
 pytest:
 
-```bash
-pip install "talika[cli]"
+```bash { .talika-terminal title="Install CLI Extra" }
+$ pip install "talika[cli]"
 ```
 
 Use the Pydantic extra when your schema returns Pydantic models:
 
-```bash
-pip install "talika[pydantic]"
+```bash { .talika-terminal title="Install Pydantic Extra" }
+$ pip install "talika[pydantic]"
 ```

@@ -7,13 +7,12 @@ icon: lucide/table
 A pytest-bdd datatable is a table attached to a step. In Python, the step
 receives it as a raw `list[list[str]]`.
 
-```gherkin
+```gherkin title="A"
 Given the users:
   | name  | age |
   | Alice | 30  |
 ```
-
-```python
+```python title="B"
 [
     ["name", "age"],
     ["Alice", "30"],

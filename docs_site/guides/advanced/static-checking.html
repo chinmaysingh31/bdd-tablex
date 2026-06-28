@@ -75,6 +75,8 @@
     
       <link rel="stylesheet" href="../../stylesheets/extra.css">
     
+      <link rel="stylesheet" href="../../stylesheets/code-effects.css">
+    
     <script>__md_scope=new URL("../..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
     
       
@@ -2467,10 +2469,10 @@
 
 <h1 id="static-checking">Static Checking<a class="headerlink" href="#static-checking" title="Permanent link">⚓︎</a></h1>
 <p>Install the CLI extra:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;talika[cli]&quot;</span>
+<div class="language-bash talika-terminal highlight"><span class="filename">Install CLI Extra</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;talika[cli]&quot;</span>
 </span></code></pre></div>
 <p>Then validate feature-file tables without running pytest scenarios:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>talika<span class="w"> </span>check<span class="w"> </span>features/users.feature<span class="w"> </span><span class="se">\</span>
+<div class="language-bash talika-terminal highlight"><span class="filename">Validate Feature Tables</span><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>talika<span class="w"> </span>check<span class="w"> </span>features/users.feature<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>--schema<span class="w"> </span>app.schemas:UserTable<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>--step<span class="w"> </span><span class="s2">&quot;the users:&quot;</span><span class="w"> </span><span class="se">\</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span>--format<span class="w"> </span>json
@@ -2480,7 +2482,7 @@
 source-aware <code>TableData</code>, and parses them with <code>error_mode="collect"</code>.</p>
 <p>That means normal parsers and validators run. If they need deterministic
 project dependencies, provide a context factory:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>talika<span class="w"> </span>check<span class="w"> </span>features/users.feature<span class="w"> </span><span class="se">\</span>
+<div class="language-bash talika-terminal highlight"><span class="filename">Check With Context</span><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$<span class="w"> </span>talika<span class="w"> </span>check<span class="w"> </span>features/users.feature<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>--schema<span class="w"> </span>app.schemas:UserTable<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>--context-factory<span class="w"> </span>app.schemas:checking_context
 </span></code></pre></div>

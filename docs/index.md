@@ -77,3 +77,24 @@ Declarative schemas for your test data tables.
 Talika handles parsing, cell conversion, validation, and precise error reporting — and lets your team define its own readable cell conventions instead of fighting <code>list[list[str]]</code>
 
 </p>
+
+The key features are:
+
+- **Short**: Eliminate manual parsing boilerplate and stop slicing raw `list[list[str]]` inputs.
+- **Typed**: Declare your schema using standard Python types for automatic cell conversion.
+- **Fewer bugs**: Validate required fields and exact types before your test steps even execute.
+- **Pinpoint errors**: Get exact line and column locations in your `.feature` file when data fails validation.
+- **Expressive**: Define custom `cell conventions`, fallbacks, and regex matchers with the `built-in DSL`.
+- **Polymorphic**: Parse rows representing completely different object types using `clean variant schemas`.
+- **Flexible**: Support both Row-oriented (lists) and Column-oriented (single items) tables seamlessly.
+- **Static validation**: Use the `talika check` CLI to validate Gherkin tables in CI without booting your test suite.
+
+
+```bash { .talika-terminal .speed-1 title="Built By" }
+$ Chinmay
+Github - https://github.com/chinmaysingh31
+Email - chinmay@gmail.com
+$ Nishant
+Github - https://github.com/github
+Email - nishant@gmail.com
+```

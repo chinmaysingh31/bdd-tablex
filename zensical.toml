@@ -8,7 +8,7 @@ site_dir = "docs_site"
 site_name = "Talika Documentation"
 site_url = "http://localhost:8000/"
 use_directory_urls = true
-extra_css = ["stylesheets/extra.css"]
+extra_css = ["stylesheets/extra.css", "stylesheets/code-effects.css"]
 extra_javascript = ["javascripts/extra.js"]
 # --8<-- [start:nav]
 # nav = [

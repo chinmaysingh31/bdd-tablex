@@ -301,3 +301,40 @@ body::before {
     border-bottom: none;
     font-weight: 1000;
 }
+
+/* Match normal code blocks to the Talika terminal surface. */
+.md-typeset .highlight:not(.talika-terminal) {
+    --md-code-bg-color: var(--talika-terminal-bg, hsla(var(--md-hue), 20%, 10%, 1));
+    background:
+        linear-gradient(135deg, rgba(203, 6, 99, 0.14), transparent 34%),
+        linear-gradient(160deg, rgba(248, 161, 48, 0.11), transparent 42%),
+        var(--md-code-bg-color);
+    border: 1px solid var(--talika-terminal-border, var(--md-default-fg-color--lightest));
+    border-radius: 7px;
+    margin: 0.85em 0 1em;
+    overflow: hidden;
+}
+
+.md-typeset .highlight:not(.talika-terminal) + .highlight:not(.talika-terminal) {
+    margin-top: 0.95em;
+}
+
+.md-typeset .highlight:not(.talika-terminal) > pre,
+.md-typeset .highlight:not(.talika-terminal) pre > code {
+    background: transparent;
+}
+
+.md-typeset .highlight:not(.talika-terminal) > pre {
+    margin: 0;
+    margin-block: 0;
+}
+
+.md-typeset .highlight:not(.talika-terminal) > .filename {
+    background: var(--talika-terminal-bg-soft, var(--md-code-bg-color));
+    border-bottom: 1px solid var(--talika-terminal-border, var(--md-default-fg-color--lightest));
+    border-radius: 0;
+    color: var(--talika-terminal-muted, var(--md-default-fg-color--light));
+    margin: 0;
+}
+
+

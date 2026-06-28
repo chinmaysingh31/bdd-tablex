@@ -6,14 +6,14 @@ icon: lucide/terminal
 
 The CLI is installed with:
 
-```bash
-pip install "talika[cli]"
+```bash { .talika-terminal title="Install CLI" }
+$ pip install "talika[cli]"
 ```
 
 ## check
 
-```bash
-talika check PATH... --schema module:SchemaClass
+```bash { .talika-terminal title="Run Static Checks" }
+$ talika check PATH... --schema module:SchemaClass
 ```
 
 Options:
@@ -31,9 +31,9 @@ Exit codes:
 
 ## describe
 
-```bash
-talika describe module:SchemaClass
-talika describe module:SchemaClass --format json
+```bash { .talika-terminal title="Describe Schema" }
+$ talika describe module:SchemaClass
+$ talika describe module:SchemaClass --format json
 ```
 
 ## Checker APIs

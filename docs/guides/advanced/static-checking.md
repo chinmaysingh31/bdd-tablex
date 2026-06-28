@@ -6,14 +6,14 @@ icon: lucide/terminal
 
 Install the CLI extra:
 
-```bash
-pip install "talika[cli]"
+```bash { .talika-terminal title="Install CLI Extra" }
+$ pip install "talika[cli]"
 ```
 
 Then validate feature-file tables without running pytest scenarios:
 
-```bash
-talika check features/users.feature \
+```bash { .talika-terminal title="Validate Feature Tables" }
+$ talika check features/users.feature \
   --schema app.schemas:UserTable \
   --step "the users:" \
   --format json
@@ -27,8 +27,8 @@ source-aware `TableData`, and parses them with `error_mode="collect"`.
 That means normal parsers and validators run. If they need deterministic
 project dependencies, provide a context factory:
 
-```bash
-talika check features/users.feature \
+```bash { .talika-terminal title="Check With Context" }
+$ talika check features/users.feature \
   --schema app.schemas:UserTable \
   --context-factory app.schemas:checking_context
 ```

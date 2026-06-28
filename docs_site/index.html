@@ -73,6 +73,8 @@
     
       <link rel="stylesheet" href="./stylesheets/extra.css">
     
+      <link rel="stylesheet" href="./stylesheets/code-effects.css">
+    
     <script>__md_scope=new URL(".",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
     
       
@@ -2308,6 +2310,25 @@ Declarative schemas for your test data tables.
 Talika handles parsing, cell conversion, validation, and precise error reporting — and lets your team define its own readable cell conventions instead of fighting <code>list[list[str]]</code>
 
 </p>
+
+<p>The key features are:</p>
+<ul>
+<li><strong>Short</strong>: Eliminate manual parsing boilerplate and stop slicing raw <code>list[list[str]]</code> inputs.</li>
+<li><strong>Typed</strong>: Declare your schema using standard Python types for automatic cell conversion.</li>
+<li><strong>Fewer bugs</strong>: Validate required fields and exact types before your test steps even execute.</li>
+<li><strong>Pinpoint errors</strong>: Get exact line and column locations in your <code>.feature</code> file when data fails validation.</li>
+<li><strong>Expressive</strong>: Define custom <code>cell conventions</code>, fallbacks, and regex matchers with the <code>built-in DSL</code>.</li>
+<li><strong>Polymorphic</strong>: Parse rows representing completely different object types using <code>clean variant schemas</code>.</li>
+<li><strong>Flexible</strong>: Support both Row-oriented (lists) and Column-oriented (single items) tables seamlessly.</li>
+<li><strong>Static validation</strong>: Use the <code>talika check</code> CLI to validate Gherkin tables in CI without booting your test suite.</li>
+</ul>
+<div class="language-bash talika-terminal speed-1 highlight"><span class="filename">Built By</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>Chinmay
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Github<span class="w"> </span>-<span class="w"> </span>https://github.com/chinmaysingh31
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Email<span class="w"> </span>-<span class="w"> </span>chinmay@gmail.com
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>$<span class="w"> </span>Nishant
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>Github<span class="w"> </span>-<span class="w"> </span>https://github.com/github
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>Email<span class="w"> </span>-<span class="w"> </span>nishant@gmail.com
+</span></code></pre></div>
 
 
 

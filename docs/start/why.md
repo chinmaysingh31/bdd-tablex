@@ -16,14 +16,14 @@ typed records, validation, and diagnostics that point back to the source cell.
 
 Without Talika, table parsing often starts as simple glue:
 
-```python
+```python { .talika-terminal title="OLD GHERKIN" }
 headers, *rows = datatable
 users = [dict(zip(headers, row, strict=True)) for row in rows]
 ```
 
 Then the suite grows:
 
-```python
+```python title="New gherking Python"
 age = int(user["age"])
 roles = user["roles"].split("|")
 if user["active"].lower() not in {"yes", "no"}:

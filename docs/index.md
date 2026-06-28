@@ -1,79 +1,79 @@
 ---
 icon: lucide/table-properties
+title: Talika
 ---
 
-# Talika
+<style> .md-content .md-typeset h1 { display: none; } </style>
+<style>
+.md-content .md-typeset a {
+  color: inherit;
+  text-decoration: none;
+}
+</style>
 
-## Typed data tables for pytest-bdd
+<style>
+.md-typeset code {
+  background: linear-gradient(90deg, #cb0663, #f8a130);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  box-shadow: none;
+}
+</style>
 
-Declare a table contract in Python. Talika turns pytest-bdd's raw
-`list[list[str]]` into typed records with source-aware errors, without
-replacing pytest or adding runtime dependencies.
+<p align="center">
+  <a><img src="http://localhost:8000/assets/images/logotalpha_400.png" alt="Talika"></a>
+</p>
 
-Talika is the missing DataTableType-style layer for pytest-bdd: table-to-object
-conversion, validation, and precise diagnostics for Python BDD teams.
+<p align="center">
+  Talika - <strong><em>Hindi for Tables</em></strong>
+  <svg xmlns="http://www.w3.org/2000/svg"
+       width="22"
+       height="22"
+       viewBox="0 -2 24 24"
+       fill="none"
+       stroke="url(#table-icon-gradient)"
+       stroke-width="2"
+       stroke-linecap="round"
+       stroke-linejoin="round">
 
-```python
-from talika import RowTable, field
+    <defs>
+      <linearGradient id="table-icon-gradient" x1="3" y1="3" x2="21" y2="21" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#ef1266" />
+        <stop offset="100%" stop-color="#fea22f" />
+      </linearGradient>
+    </defs>
 
+    <rect width="18" height="18" x="3" y="3" rx="2"/>
+    <path d="M3 9h18"/>
+    <path d="M3 15h18"/>
+    <path d="M9 3v18"/>
+    <path d="M15 3v18"/>
+  </svg>
+</br>
+Declarative schemas for your test data tables.
+</p>
 
-class UserTable(RowTable):
-    name = field("name", required=True)
-    age: int = field("age")
+<p align="center">
 
+<a href="https://github.com/chinmaysingh31/bdd-tablex/actions?query=event%3Apush+branch%3Amaster">
+    <img src="https://github.com/chinmaysingh31/bdd-tablex/actions/workflows/ci.yml/badge.svg?event=push&branch=master" alt="Test">
+</a>
 
-users = UserTable.parse([
-    ["name", "age"],
-    ["Alice", "30"],
-])
+<a href="https://pypi.org/project/fastapi">
+    <img src="https://img.shields.io/pypi/v/fastapi?color=%2334D058&label=pypi%20package" alt="Package version">
+</a>
 
-assert users[0].name == "Alice"
-assert users[0].age == 30
-```
+<a href="https://pypi.org/project/fastapi">
+    <img src="https://img.shields.io/pypi/pyversions/fastapi.svg?color=%2334D058" alt="Supported Python versions">
+</a>
+</p>
 
-## The raw datatable problem
+----
+<p align="center">
+<em>Define your table shape once with Python types and descriptors.</em>
+</br>
 
-pytest-bdd gives a step function a table as plain nested strings. That is a
-useful starting point, but real suites quickly grow code like this:
+Talika handles parsing, cell conversion, validation, and precise error reporting — and lets your team define its own readable cell conventions instead of fighting <code>list[list[str]]</code>
 
-```python
-headers, *rows = datatable
-users = [dict(zip(headers, row, strict=True)) for row in rows]
-
-age = int(users[0]["age"])
-role = users[0]["role"]
-```
-
-That code has no table contract, no typed output, and no way to tell a feature
-author which source cell caused a `KeyError` or `ValueError`.
-
-## What Talika adds
-
-Talika makes the table shape explicit:
-
-- **Contracts**: declare labels, required fields, aliases, defaults, parsers,
-  validators, references, and variants in Python.
-- **Typed records**: parse into schema records, dataclasses, Pydantic models, or
-  any output object you build.
-- **Source-aware errors**: failures carry stable codes plus row, column,
-  field, value, and item ID when available.
-- **Readable conventions**: tokens like `today`, `random`, `1..3`, or
-  `admin|editor` can become documented project rules instead of scattered
-  `if` statements.
-- **Zero core dependencies**: install extras only for CLI checking or Pydantic
-  output.
-
-## A real error
-
-```text
-Required field has an empty value (code=empty_required, schema=UserTable, field='name', row=2, column=1, value=''). Hint: Fill the cell, or remove required=True if an explicit empty value should be valid.
-```
-
-That is the product: the person editing the feature file sees the row, column,
-field, code, value, and hint.
-
-## Next
-
-Start with [Installation](start/install.md), then build your first contract in
-[Quickstart](start/quickstart.md). If you are evaluating the fit, read
-[Why Talika?](start/why.md).
+</p>

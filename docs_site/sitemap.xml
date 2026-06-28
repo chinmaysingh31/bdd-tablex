@@ -4,13 +4,13 @@
         <loc>http://localhost:8000/index.html</loc>
       </url>
       <url>
+        <loc>http://localhost:8000/start/why.html</loc>
+      </url>
+      <url>
         <loc>http://localhost:8000/start/install.html</loc>
       </url>
       <url>
         <loc>http://localhost:8000/start/quickstart.html</loc>
-      </url>
-      <url>
-        <loc>http://localhost:8000/start/why.html</loc>
       </url>
       <url>
         <loc>http://localhost:8000/learn/datatables.html</loc>

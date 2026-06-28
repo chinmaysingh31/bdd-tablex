@@ -1,4 +1,4 @@
-# --8<-- [start:project]
+
 [project]
 repo_name = "chinmaysingh31/talika"
 repo_url = "https://github.com/chinmaysingh31/talika"
@@ -8,6 +8,8 @@ site_dir = "docs_site"
 site_name = "Talika Documentation"
 site_url = "http://localhost:8000/"
 use_directory_urls = true
+extra_css = ["stylesheets/extra.css"]
+extra_javascript = ["javascripts/extra.js"]
 # --8<-- [start:nav]
 # nav = [
 #   {"Get Started" = [
@@ -30,11 +32,13 @@ use_directory_urls = true
 # ]
 
 nav = [
-  {"Start" = [
-    {"Talika" = "index.md"},
+  {"Talika" = [
+    {"Talika" = "index.md"}
+  ]},
+  {"Getting Started" = [
+    {"Why Talika?" = "start/why.md"},
     {"Installation" = "start/install.md"},
     {"Quickstart" = "start/quickstart.md"},
-    {"Why Talika?" = "start/why.md"},
   ]},
   {"Learn" = [
     {"Data Tables" = "learn/datatables.md"},
@@ -86,9 +90,7 @@ nav = [
     {"Public API" = "reference/public-api.md"},
   ]},
 ]
-# --8<-- [end:nav]
-# --8<-- [end:project]
-# --8<-- [start:theme_features]
+
 [project.theme]
 features = [
   "announce.dismiss",
@@ -99,7 +101,8 @@ features = [
   "content.tabs.link",
   "content.tooltips",
   "header.autohide",
-  "navigation.expand", # "navigation.footer",
+  "navigation.expand", 
+  "navigation.footer",
   "navigation.indexes",
   "navigation.instant",
   "navigation.instant.prefetch",
@@ -110,11 +113,19 @@ features = [
   "navigation.tracking",
   "search.highlight",
 ]
-# --8<-- [end:theme_features]
-# --8<-- [start:theme_ui]
-favicon = "assets/zensical.png"
+
+favicon = "assets/images/svg/logoalpha.svg"
 language = "en"
-logo = "assets/images/talika.png"
+logo = "assets/images/svg/logoalpha.svg"
+font.text = "Google Sans"
+font.code = "Google Sans Code"
+
+[project.extra]
+generator = false
+
+# [[project.extra.social]]
+# icon = "fontawesome/brands/github"
+# link = "https://github.com/chinmaysingh31/bdd-tablex"
 
 [[project.theme.palette]]
 media = "(prefers-color-scheme)"
@@ -122,17 +133,17 @@ toggle.icon = "lucide/sun-moon"
 toggle.name = "Switch to light mode"
 
 [[project.theme.palette]]
-accent = "teal"
+accent = "talika-accent"
 media = "(prefers-color-scheme: light)"
-primary = "indigo"
+primary = "amber"
 scheme = "default"
 toggle.icon = "lucide/sun"
 toggle.name = "Switch to dark mode"
 
 [[project.theme.palette]]
-accent = "teal"
+accent = "talika-accent"
 media = "(prefers-color-scheme: dark)"
-primary = "indigo"
+primary = "amber"
 scheme = "slate"
 toggle.icon = "lucide/moon-star"
 toggle.name = "Switch to system preference"
@@ -142,10 +153,6 @@ repo = "material/github"
 
 [project.theme.icon.tag]
 default = "lucide/hash"
-
-# --8<-- [end:theme_ui]
-[project.extra]
-generator = false
 
 [project.extra.tags]
 docs = "docs"
@@ -167,7 +174,7 @@ emoji_index = "zensical.extensions.emoji.twemoji"
 
 [project.markdown_extensions.pymdownx.highlight]
 anchor_linenums = true
-auto_title = true
+auto_title = false
 line_spans = "__span"
 # linenums = true
 linenums_style = "pymdownx-inline"

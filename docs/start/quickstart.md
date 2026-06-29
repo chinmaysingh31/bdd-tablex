@@ -56,7 +56,11 @@ UserTable.parse([
 The first failure is source-aware:
 
 ```text
-Required field has an empty value (code=empty_required, schema=UserTable, field='name', row=2, column=1, value=''). Hint: Fill the cell, or remove required=True if an explicit empty value should be valid.
+Required field has an empty value 
+
+(code=empty_required, schema=UserTable, field='name', row=2, column=1, value=''). 
+
+Hint: Fill the cell, or remove required=True if an explicit empty value should be valid.
 ```
 
 Use collect mode when authors should see every independent problem in one pass:

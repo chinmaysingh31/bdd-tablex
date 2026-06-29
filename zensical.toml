@@ -119,6 +119,7 @@ language = "en"
 logo = "assets/images/svg/logoalpha.svg"
 font.text = "Google Sans"
 font.code = "Google Sans Code"
+custom_dir = "docs/overrides"
 
 [project.extra]
 generator = false
@@ -171,6 +172,7 @@ enabled = true
 [project.markdown_extensions.pymdownx.emoji]
 emoji_generator = "zensical.extensions.emoji.to_svg"
 emoji_index = "zensical.extensions.emoji.twemoji"
+options.custom_icons = ["docs/overrides/.icons"]
 
 [project.markdown_extensions.pymdownx.highlight]
 anchor_linenums = true

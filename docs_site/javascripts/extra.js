@@ -144,7 +144,7 @@
       return null;
     }
 
-    match = line.match(/^\s*(\$|#)\s(.*)$/);
+    match = line.match(/^\s*(\$|#|>>)\s(.*)$/);
     if (match) {
       return {
         kind: "command",

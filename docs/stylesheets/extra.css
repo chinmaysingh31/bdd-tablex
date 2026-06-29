@@ -312,7 +312,7 @@ body::before {
     border: 1px solid var(--talika-terminal-border, var(--md-default-fg-color--lightest));
     border-radius: 7px;
     margin: 0.85em 0 1em;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .md-typeset .highlight:not(.talika-terminal) + .highlight:not(.talika-terminal) {

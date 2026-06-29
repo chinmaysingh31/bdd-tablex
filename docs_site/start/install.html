@@ -701,10 +701,43 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Virtual Environment
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#install-talika" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Install Talika
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#optional-extras" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Optional extras
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verify-the-install" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Verify the install
       </span>
     </span>
   </a>
@@ -2302,10 +2335,43 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Virtual Environment
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#install-talika" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Install Talika
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#optional-extras" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Optional extras
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verify-the-install" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Verify the install
       </span>
     </span>
   </a>
@@ -2349,20 +2415,184 @@
 
 <h1 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">⚓︎</a></h1>
 <p>Talika supports Python 3.10 and newer.</p>
-<p>The core package has no runtime dependencies:</p>
-<p><div class="language-bash talika-terminal speed-1 highlight"><span class="filename">Install Talika</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>talika
+<p>The normal install is intentionally small. Core Talika has no runtime
+dependencies, so you can use schemas, parsers, validation, Custom DSL, table
+transforms, and source-aware errors without pulling in a larger test stack.</p>
+<p>We recommend <code>uv</code> for new projects. It is fast, creates virtual environments
+easily, and keeps dependency changes explicit in your project. If your project
+already uses <code>pip</code> and <code>venv</code>, Talika works there too.</p>
+<h2 id="virtual-environment">Virtual Environment<a class="headerlink" href="#virtual-environment" title="Permanent link">⚓︎</a></h2>
+<p>Install Talika inside a virtual environment so your test dependencies stay
+separate from your system Python.</p>
+<p>Use the <code>uv</code> tab if you are starting fresh. Use the <code>pip</code> tab if that matches
+the rest of your project.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1"><span class="twemoji"><svg width="41" height="41" viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M-5.28619e-06 0.168629L0.0843098 20.1685L0.151762 36.1683C0.161075 38.3774 1.95947 40.1607 4.16859 40.1514L20.1684 40.084L30.1684 40.0418L31.1852 40.0375C33.3877 40.0282 35.1683 38.2026 35.1683 36V36L37.0003 36L37.0003 39.9992L40.1683 39.9996L39.9996 -9.94653e-07L21.5998 0.0775689L21.6774 16.0185L21.6774 25.9998L20.0774 25.9998L18.3998 25.9998L18.4774 16.032L18.3998 0.0910593L-5.28619e-06 0.168629Z" fill="#DE5FE9"/>
+</svg>
+</span>&nbsp;uv&nbsp;</label><label for="__tabbed_1_2"><span class="twemoji"><?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg width="800px" height="800px" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M13.0164 2C10.8193 2 9.03825 3.72453 9.03825 5.85185V8.51852H15.9235V9.25926H5.97814C3.78107 9.25926 2 10.9838 2 13.1111L2 18.8889C2 21.0162 3.78107 22.7407 5.97814 22.7407H8.27322V19.4815C8.27322 17.3542 10.0543 15.6296 12.2514 15.6296H19.5956C21.4547 15.6296 22.9617 14.1704 22.9617 12.3704V5.85185C22.9617 3.72453 21.1807 2 18.9836 2H13.0164ZM12.0984 6.74074C12.8589 6.74074 13.4754 6.14378 13.4754 5.40741C13.4754 4.67103 12.8589 4.07407 12.0984 4.07407C11.3378 4.07407 10.7213 4.67103 10.7213 5.40741C10.7213 6.14378 11.3378 6.74074 12.0984 6.74074Z" fill="url(#paint0_linear_87_8204)"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M18.9834 30C21.1805 30 22.9616 28.2755 22.9616 26.1482V23.4815L16.0763 23.4815L16.0763 22.7408L26.0217 22.7408C28.2188 22.7408 29.9998 21.0162 29.9998 18.8889V13.1111C29.9998 10.9838 28.2188 9.25928 26.0217 9.25928L23.7266 9.25928V12.5185C23.7266 14.6459 21.9455 16.3704 19.7485 16.3704L12.4042 16.3704C10.5451 16.3704 9.03809 17.8296 9.03809 19.6296L9.03809 26.1482C9.03809 28.2755 10.8192 30 13.0162 30H18.9834ZM19.9015 25.2593C19.1409 25.2593 18.5244 25.8562 18.5244 26.5926C18.5244 27.329 19.1409 27.9259 19.9015 27.9259C20.662 27.9259 21.2785 27.329 21.2785 26.5926C21.2785 25.8562 20.662 25.2593 19.9015 25.2593Z" fill="url(#paint1_linear_87_8204)"/>
+<defs>
+<linearGradient id="paint0_linear_87_8204" x1="12.4809" y1="2" x2="12.4809" y2="22.7407" gradientUnits="userSpaceOnUse">
+<stop stop-color="#327EBD"/>
+<stop offset="1" stop-color="#1565A7"/>
+</linearGradient>
+<linearGradient id="paint1_linear_87_8204" x1="19.519" y1="9.25928" x2="19.519" y2="30" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FFDA4B"/>
+<stop offset="1" stop-color="#F9C600"/>
+</linearGradient>
+</defs>
+</svg></span> pip</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash talika-terminal speed-3 highlight"><span class="filename">Create env with uv</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>uv<span class="w"> </span>venv
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># Activate the environment:</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>For<span class="w"> </span>windows
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>&gt;&gt;<span class="w"> </span>.venv<span class="se">\S</span>cripts<span class="se">\a</span>ctivate.ps1
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>For<span class="w"> </span>Mac<span class="p">|</span>Linux
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>$<span class="w"> </span><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
 </span></code></pre></div>
-<div class="language-bash talika-terminal speed-1 highlight"><span class="filename">Install Talika</span><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>talika
-</span></code></pre></div></p>
+</div>
+<div class="tabbed-block">
+<div class="language-bash talika-terminal speed-3 highlight"><span class="filename">Create env with venv</span><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># Activate the environment:</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>For<span class="w"> </span>windows
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>&gt;&gt;<span class="w"> </span>.venv<span class="se">\S</span>cripts<span class="se">\a</span>ctivate.ps1
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>For<span class="w"> </span>Mac<span class="p">|</span>Linux
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>$<span class="w"> </span><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<!-- Then, activate the environment:
+
+=== ":fontawesome-brands-windows:&nbsp;Windows"
+    <div class="language-bash talika-terminal speed-3 highlight"><span class="filename">Powershell Activate</span><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>&gt;&gt;<span class="w"> </span>.venv<span class="se">\S</span>cripts<span class="se">\a</span>ctivate.ps1
+</span></code></pre></div>
+=== ":material-apple:&nbsp;macOS&nbsp;&nbsp;|&nbsp;&nbsp;:material-linux: Linux"
+    ```bash  { .talika-terminal title="Source Activate" .speed-3}
+    $ source .venv/bin/activate
+    ``` -->
+
+<h2 id="install-talika">Install Talika<a class="headerlink" href="#install-talika" title="Permanent link">⚓︎</a></h2>
+<p>For most users, start with the core package.</p>
+<p>You can add optional extras later when you need CLI checks or Pydantic output.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1"><span class="twemoji"><svg width="41" height="41" viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M-5.28619e-06 0.168629L0.0843098 20.1685L0.151762 36.1683C0.161075 38.3774 1.95947 40.1607 4.16859 40.1514L20.1684 40.084L30.1684 40.0418L31.1852 40.0375C33.3877 40.0282 35.1683 38.2026 35.1683 36V36L37.0003 36L37.0003 39.9992L40.1683 39.9996L39.9996 -9.94653e-07L21.5998 0.0775689L21.6774 16.0185L21.6774 25.9998L20.0774 25.9998L18.3998 25.9998L18.4774 16.032L18.3998 0.0910593L-5.28619e-06 0.168629Z" fill="#DE5FE9"/>
+</svg>
+</span>&nbsp;uv&nbsp;</label><label for="__tabbed_2_2"><span class="twemoji"><?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg width="800px" height="800px" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M13.0164 2C10.8193 2 9.03825 3.72453 9.03825 5.85185V8.51852H15.9235V9.25926H5.97814C3.78107 9.25926 2 10.9838 2 13.1111L2 18.8889C2 21.0162 3.78107 22.7407 5.97814 22.7407H8.27322V19.4815C8.27322 17.3542 10.0543 15.6296 12.2514 15.6296H19.5956C21.4547 15.6296 22.9617 14.1704 22.9617 12.3704V5.85185C22.9617 3.72453 21.1807 2 18.9836 2H13.0164ZM12.0984 6.74074C12.8589 6.74074 13.4754 6.14378 13.4754 5.40741C13.4754 4.67103 12.8589 4.07407 12.0984 4.07407C11.3378 4.07407 10.7213 4.67103 10.7213 5.40741C10.7213 6.14378 11.3378 6.74074 12.0984 6.74074Z" fill="url(#paint0_linear_87_8204)"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M18.9834 30C21.1805 30 22.9616 28.2755 22.9616 26.1482V23.4815L16.0763 23.4815L16.0763 22.7408L26.0217 22.7408C28.2188 22.7408 29.9998 21.0162 29.9998 18.8889V13.1111C29.9998 10.9838 28.2188 9.25928 26.0217 9.25928L23.7266 9.25928V12.5185C23.7266 14.6459 21.9455 16.3704 19.7485 16.3704L12.4042 16.3704C10.5451 16.3704 9.03809 17.8296 9.03809 19.6296L9.03809 26.1482C9.03809 28.2755 10.8192 30 13.0162 30H18.9834ZM19.9015 25.2593C19.1409 25.2593 18.5244 25.8562 18.5244 26.5926C18.5244 27.329 19.1409 27.9259 19.9015 27.9259C20.662 27.9259 21.2785 27.329 21.2785 26.5926C21.2785 25.8562 20.662 25.2593 19.9015 25.2593Z" fill="url(#paint1_linear_87_8204)"/>
+<defs>
+<linearGradient id="paint0_linear_87_8204" x1="12.4809" y1="2" x2="12.4809" y2="22.7407" gradientUnits="userSpaceOnUse">
+<stop stop-color="#327EBD"/>
+<stop offset="1" stop-color="#1565A7"/>
+</linearGradient>
+<linearGradient id="paint1_linear_87_8204" x1="19.519" y1="9.25928" x2="19.519" y2="30" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FFDA4B"/>
+<stop offset="1" stop-color="#F9C600"/>
+</linearGradient>
+</defs>
+</svg></span> pip</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash talika-terminal speed-3 highlight"><span class="filename">Install Talika with uv</span><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>$<span class="w"> </span>uv<span class="w"> </span>add<span class="w"> </span>talika
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash talika-terminal speed-3 highlight"><span class="filename">Install Talika with pip</span><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>talika
+</span></code></pre></div>
+</div>
+</div>
+</div>
 <h2 id="optional-extras">Optional extras<a class="headerlink" href="#optional-extras" title="Permanent link">⚓︎</a></h2>
-<p>Install only the integrations you use:</p>
-<div class="language-bash talika-terminal speed-3 highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;talika[cli]&quot;</span><span class="w">       </span><span class="c1"># talika check and feature-file discovery</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;talika[pydantic]&quot;</span><span class="w">  </span><span class="c1"># Pydantic v2 output models</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;talika[test]&quot;</span><span class="w">      </span><span class="c1"># project test dependencies</span>
+<p>Install only the integrations you use. The extras are separate so the core
+library can stay dependency-free.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1"><span class="twemoji"><svg width="41" height="41" viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M-5.28619e-06 0.168629L0.0843098 20.1685L0.151762 36.1683C0.161075 38.3774 1.95947 40.1607 4.16859 40.1514L20.1684 40.084L30.1684 40.0418L31.1852 40.0375C33.3877 40.0282 35.1683 38.2026 35.1683 36V36L37.0003 36L37.0003 39.9992L40.1683 39.9996L39.9996 -9.94653e-07L21.5998 0.0775689L21.6774 16.0185L21.6774 25.9998L20.0774 25.9998L18.3998 25.9998L18.4774 16.032L18.3998 0.0910593L-5.28619e-06 0.168629Z" fill="#DE5FE9"/>
+</svg>
+</span>&nbsp;uv&nbsp;</label><label for="__tabbed_3_2"><span class="twemoji"><?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg width="800px" height="800px" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M13.0164 2C10.8193 2 9.03825 3.72453 9.03825 5.85185V8.51852H15.9235V9.25926H5.97814C3.78107 9.25926 2 10.9838 2 13.1111L2 18.8889C2 21.0162 3.78107 22.7407 5.97814 22.7407H8.27322V19.4815C8.27322 17.3542 10.0543 15.6296 12.2514 15.6296H19.5956C21.4547 15.6296 22.9617 14.1704 22.9617 12.3704V5.85185C22.9617 3.72453 21.1807 2 18.9836 2H13.0164ZM12.0984 6.74074C12.8589 6.74074 13.4754 6.14378 13.4754 5.40741C13.4754 4.67103 12.8589 4.07407 12.0984 4.07407C11.3378 4.07407 10.7213 4.67103 10.7213 5.40741C10.7213 6.14378 11.3378 6.74074 12.0984 6.74074Z" fill="url(#paint0_linear_87_8204)"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M18.9834 30C21.1805 30 22.9616 28.2755 22.9616 26.1482V23.4815L16.0763 23.4815L16.0763 22.7408L26.0217 22.7408C28.2188 22.7408 29.9998 21.0162 29.9998 18.8889V13.1111C29.9998 10.9838 28.2188 9.25928 26.0217 9.25928L23.7266 9.25928V12.5185C23.7266 14.6459 21.9455 16.3704 19.7485 16.3704L12.4042 16.3704C10.5451 16.3704 9.03809 17.8296 9.03809 19.6296L9.03809 26.1482C9.03809 28.2755 10.8192 30 13.0162 30H18.9834ZM19.9015 25.2593C19.1409 25.2593 18.5244 25.8562 18.5244 26.5926C18.5244 27.329 19.1409 27.9259 19.9015 27.9259C20.662 27.9259 21.2785 27.329 21.2785 26.5926C21.2785 25.8562 20.662 25.2593 19.9015 25.2593Z" fill="url(#paint1_linear_87_8204)"/>
+<defs>
+<linearGradient id="paint0_linear_87_8204" x1="12.4809" y1="2" x2="12.4809" y2="22.7407" gradientUnits="userSpaceOnUse">
+<stop stop-color="#327EBD"/>
+<stop offset="1" stop-color="#1565A7"/>
+</linearGradient>
+<linearGradient id="paint1_linear_87_8204" x1="19.519" y1="9.25928" x2="19.519" y2="30" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FFDA4B"/>
+<stop offset="1" stop-color="#F9C600"/>
+</linearGradient>
+</defs>
+</svg></span> pip</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash talika-terminal speed-3 highlight"><span class="filename">Install Optional extras with uv</span><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>$<span class="w"> </span>uv<span class="w"> </span>add<span class="w"> </span>talika<span class="o">[</span>cli<span class="o">]</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>Use<span class="w"> </span>this<span class="w"> </span>when<span class="w"> </span>you<span class="w"> </span>want<span class="w"> </span>to<span class="w"> </span>check<span class="w"> </span><span class="sb">`</span>.feature<span class="sb">`</span><span class="w"> </span>files<span class="w"> </span>without<span class="w"> </span>running<span class="w"> </span>the<span class="w"> </span>full<span class="w"> </span><span class="nb">test</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>suite.<span class="w"> </span>It<span class="w"> </span>installs<span class="w"> </span>the<span class="w"> </span>official<span class="w"> </span>Gherkin<span class="w"> </span>parser<span class="w"> </span>used<span class="w"> </span>by<span class="w"> </span><span class="sb">`</span>talika<span class="w"> </span>check<span class="sb">`</span><span class="w"> </span>and
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>feature-file<span class="w"> </span>discovery.
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>This<span class="w"> </span>is<span class="w"> </span>useful<span class="w"> </span><span class="k">for</span><span class="w"> </span>CI,<span class="w"> </span>pre-commit<span class="w"> </span>checks,<span class="w"> </span>and<span class="w"> </span>editor<span class="w"> </span>tooling.
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>$<span class="w"> </span>uv<span class="w"> </span>add<span class="w"> </span>talika<span class="o">[</span>pydantic<span class="o">]</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>Use<span class="w"> </span>this<span class="w"> </span>when<span class="w"> </span>your<span class="w"> </span>schemas<span class="w"> </span>should<span class="w"> </span><span class="k">return</span><span class="w"> </span>Pydantic<span class="w"> </span>v2<span class="w"> </span>models<span class="w"> </span>through
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>output_model.
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>Talika<span class="w"> </span>still<span class="w"> </span>owns<span class="w"> </span>the<span class="w"> </span>table<span class="w"> </span>boundary:<span class="w"> </span>labels,<span class="w"> </span>cell<span class="w"> </span>parsing,<span class="w"> </span><span class="nb">source</span><span class="w"> </span>locations,
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>and<span class="w"> </span>table<span class="w"> </span>validation.<span class="w"> </span>Pydantic<span class="w"> </span>owns<span class="w"> </span>the<span class="w"> </span>final<span class="w"> </span>model<span class="w"> </span>validation.
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>$<span class="w"> </span>uv<span class="w"> </span>add<span class="w"> </span>talika<span class="o">[</span>test<span class="o">]</span><span class="w">      </span>
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>Use<span class="w"> </span>this<span class="w"> </span>when<span class="w"> </span>you<span class="w"> </span>want<span class="w"> </span>the<span class="w"> </span>dependencies<span class="w"> </span>needed<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>package<span class="w"> </span>tests<span class="w"> </span>and
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>runnable<span class="w"> </span>examples.<span class="w"> </span>It<span class="w"> </span>includes<span class="w"> </span>pytest,<span class="w"> </span>pytest-bdd,<span class="w"> </span>the<span class="w"> </span>CLI<span class="w"> </span>dependencies,<span class="w"> </span>and
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>Pydantic.
+</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>
+</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>Most<span class="w"> </span>application<span class="w"> </span>projects<span class="w"> </span><span class="k">do</span><span class="w"> </span>not<span class="w"> </span>need<span class="w"> </span>this<span class="w"> </span>extra<span class="w"> </span>unless<span class="w"> </span>they<span class="w"> </span>are<span class="w"> </span>contributing
+</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>to<span class="w"> </span>Talika<span class="w"> </span>or<span class="w"> </span>running<span class="w"> </span>the<span class="w"> </span>example<span class="w"> </span>suite<span class="w"> </span>locally.
 </span></code></pre></div>
-<p>The command line interface is available as:</p>
-<div class="language-bash talika-terminal speed-2 highlight"><span class="filename">Check CLI Entrypoints</span><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>$<span class="w"> </span>talika<span class="w"> </span>--help
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>$<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>talika<span class="w"> </span>--help
+</div>
+<div class="tabbed-block">
+<div class="language-bash talika-terminal speed-3 highlight"><span class="filename">Install Optional extras with pip</span><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>talika<span class="w"> </span>check<span class="w"> </span>and<span class="w"> </span>feature-file<span class="w"> </span>discovery
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>Use<span class="w"> </span>this<span class="w"> </span>when<span class="w"> </span>you<span class="w"> </span>want<span class="w"> </span>to<span class="w"> </span>check<span class="w"> </span><span class="sb">`</span>.feature<span class="sb">`</span><span class="w"> </span>files<span class="w"> </span>without<span class="w"> </span>running<span class="w"> </span>the<span class="w"> </span>full<span class="w"> </span><span class="nb">test</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>suite.<span class="w"> </span>It<span class="w"> </span>installs<span class="w"> </span>the<span class="w"> </span>official<span class="w"> </span>Gherkin<span class="w"> </span>parser<span class="w"> </span>used<span class="w"> </span>by<span class="w"> </span><span class="sb">`</span>talika<span class="w"> </span>check<span class="sb">`</span><span class="w"> </span>and
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>feature-file<span class="w"> </span>discovery.
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>This<span class="w"> </span>is<span class="w"> </span>useful<span class="w"> </span><span class="k">for</span><span class="w"> </span>CI,<span class="w"> </span>pre-commit<span class="w"> </span>checks,<span class="w"> </span>and<span class="w"> </span>editor<span class="w"> </span>tooling.
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>talika<span class="o">[</span>cli<span class="o">]</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>Pydantic<span class="w"> </span>v2<span class="w"> </span>output<span class="w"> </span>models
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>talika<span class="o">[</span>pydantic<span class="o">]</span>
+</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>
+</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>project<span class="w"> </span><span class="nb">test</span><span class="w"> </span>dependencies
+</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>talika<span class="o">[</span>test<span class="o">]</span><span class="w"> </span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<h2 id="verify-the-install">Verify the install<a class="headerlink" href="#verify-the-install" title="Permanent link">⚓︎</a></h2>
+<p>After installation, import Talika from Python:</p>
+<div class="language-bash talika-terminal speed-3 highlight"><span class="filename">Check Python Import</span><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>$<span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import talika; print(talika.__version__)&quot;</span>
+</span></code></pre></div>
+<p>If you installed the CLI extra, the command line interface is available as:</p>
+<div class="language-bash talika-terminal speed-3 highlight"><span class="filename">Check CLI Entrypoints</span><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>$<span class="w"> </span>talika<span class="w"> </span>--help
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>$<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>talika<span class="w"> </span>--help
 </span></code></pre></div>
 <h2 id="what-gets-installed">What gets installed<a class="headerlink" href="#what-gets-installed" title="Permanent link">⚓︎</a></h2>
 <p>Core parsing imports only the Python standard library. The official Gherkin
@@ -2370,11 +2600,14 @@ parser is loaded lazily by the CLI and checker APIs, so ordinary schema parsing
 does not depend on it.</p>
 <p>Use the CLI extra when you want to validate <code>.feature</code> files without running
 pytest:</p>
-<div class="language-bash talika-terminal highlight"><span class="filename">Install CLI Extra</span><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;talika[cli]&quot;</span>
+<div class="language-bash talika-terminal speed-3 highlight"><span class="filename">Install CLI Extra</span><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>$<span class="w"> </span>uv<span class="w"> </span>add<span class="w"> </span>talika<span class="o">[</span>cli<span class="o">]</span>
 </span></code></pre></div>
-<p>Use the Pydantic extra when your schema returns Pydantic models:</p>
-<div class="language-bash talika-terminal highlight"><span class="filename">Install Pydantic Extra</span><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;talika[pydantic]&quot;</span>
+<p>Use the Pydantic extra only when your parsed records should become Pydantic
+models:</p>
+<div class="language-bash talika-terminal speed-3 highlight"><span class="filename">Install Pydantic Extra</span><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>$<span class="w"> </span>uv<span class="w"> </span>add<span class="w"> </span>talika<span class="o">[</span>pydantic<span class="o">]</span>
 </span></code></pre></div>
+<p>If you are unsure, install only <code>talika</code> first. You can add an extra later
+without changing your schemas.</p>
 
 
 

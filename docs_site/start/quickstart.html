@@ -2448,7 +2448,11 @@ available when you want project-specific syntax.</p>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">])</span>
 </span></code></pre></div>
 <p>The first failure is source-aware:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Required field has an empty value (code=empty_required, schema=UserTable, field=&#39;name&#39;, row=2, column=1, value=&#39;&#39;). Hint: Fill the cell, or remove required=True if an explicit empty value should be valid.
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Required field has an empty value 
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>(code=empty_required, schema=UserTable, field=&#39;name&#39;, row=2, column=1, value=&#39;&#39;). 
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>Hint: Fill the cell, or remove required=True if an explicit empty value should be valid.
 </span></code></pre></div>
 <p>Use collect mode when authors should see every independent problem in one pass:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">UserTable</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">datatable</span><span class="p">,</span> <span class="n">error_mode</span><span class="o">=</span><span class="s2">&quot;collect&quot;</span><span class="p">)</span>

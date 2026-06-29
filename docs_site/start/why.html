@@ -672,10 +672,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-pain-talika-removes" class="md-nav__link">
+  <a href="#the-missing-layer" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        The pain Talika removes
+        The missing layer
       </span>
     </span>
   </a>
@@ -683,10 +683,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-talika-layer" class="md-nav__link">
+  <a href="#what-talika-gives-you" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        The Talika layer
+        What Talika gives you
       </span>
     </span>
   </a>
@@ -694,10 +694,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparison" class="md-nav__link">
+  <a href="#custom-table-language" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Comparison
+        Custom table language
       </span>
     </span>
   </a>
@@ -705,10 +705,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-source-aware-errors-matter" class="md-nav__link">
+  <a href="#how-talika-compares" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Why source-aware errors matter
+        How Talika compares
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-talika-shines" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Where Talika shines
       </span>
     </span>
   </a>
@@ -2335,10 +2346,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-pain-talika-removes" class="md-nav__link">
+  <a href="#the-missing-layer" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        The pain Talika removes
+        The missing layer
       </span>
     </span>
   </a>
@@ -2346,10 +2357,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-talika-layer" class="md-nav__link">
+  <a href="#what-talika-gives-you" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        The Talika layer
+        What Talika gives you
       </span>
     </span>
   </a>
@@ -2357,10 +2368,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparison" class="md-nav__link">
+  <a href="#custom-table-language" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Comparison
+        Custom table language
       </span>
     </span>
   </a>
@@ -2368,10 +2379,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-source-aware-errors-matter" class="md-nav__link">
+  <a href="#how-talika-compares" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Why source-aware errors matter
+        How Talika compares
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-talika-shines" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Where Talika shines
       </span>
     </span>
   </a>
@@ -2414,87 +2436,293 @@
 
 
 <h1 id="why-talika">Why Talika?<a class="headerlink" href="#why-talika" title="Permanent link">⚓︎</a></h1>
-<p>pytest-bdd gives Python teams Gherkin and pytest together. The gap is data
-tables.</p>
-<p>Cucumber ecosystems have a DataTableType-style layer for turning authored
-tables into domain objects. pytest-bdd exposes the table as raw
-<code>list[list[str]]</code>. Talika fills that missing layer for Python: table contracts,
-typed records, validation, and diagnostics that point back to the source cell.</p>
-<h2 id="the-pain-talika-removes">The pain Talika removes<a class="headerlink" href="#the-pain-talika-removes" title="Permanent link">⚓︎</a></h2>
-<p>Without Talika, table parsing often starts as simple glue:</p>
-<div class="language-python talika-terminal highlight"><span class="filename">OLD GHERKIN</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">headers</span><span class="p">,</span> <span class="o">*</span><span class="n">rows</span> <span class="o">=</span> <span class="n">datatable</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">users</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">headers</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
+<p>We built Talika because we needed BDD data tables to stay simple for authors
+and still be reliable for test code.</p>
+<p>The core package has zero runtime dependencies. You can start with plain Python
+schemas, parse ordinary <code>list[list[str]]</code> tables, and add only the optional
+extras you need for CLI checks or Pydantic output. At the same time, Talika
+gives you the pieces to build your own table language: schema validation,
+typed cell parsers, custom cell DSL rules, source-aware errors, variants,
+references, table transforms, and output models.</p>
+<p>In <code>pytest-bdd</code>, a Gherkin data table reaches the step function as a raw
+<code>list[list[str]]</code>. That is simple and flexible, but it means every project has
+to decide what the table means:</p>
+<ul>
+<li>which row or column contains labels</li>
+<li>which fields are required</li>
+<li>how strings become <code>int</code>, <code>bool</code>, <code>Decimal</code>, enums, or lists</li>
+<li>what an empty cell means</li>
+<li>whether old labels are still accepted</li>
+<li>what custom words like <code>random</code>, <code>today</code>, or <code>3 Articles</code> mean</li>
+<li>where to point the user when a value is wrong</li>
+</ul>
+<p>For one small table, hand-written parsing is fine. In a real test suite, that
+glue starts to spread across step definitions.</p>
+<div class="language-python highlight"><span class="filename">A typical first parser</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">headers</span><span class="p">,</span> <span class="o">*</span><span class="n">rows</span> <span class="o">=</span> <span class="n">datatable</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">users</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">raw</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">headers</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">users</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">raw</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">]),</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        <span class="s2">&quot;active&quot;</span><span class="p">:</span> <span class="n">raw</span><span class="p">[</span><span class="s2">&quot;active&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">},</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="p">})</span>
 </span></code></pre></div>
-<p>Then the suite grows:</p>
-<div class="language-python highlight"><span class="filename">New gherking Python</span><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">age</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">user</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">])</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">roles</span> <span class="o">=</span> <span class="n">user</span><span class="p">[</span><span class="s2">&quot;roles&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">if</span> <span class="n">user</span><span class="p">[</span><span class="s2">&quot;active&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">}:</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;bad active value&quot;</span><span class="p">)</span>
+<p>The problem is not the code above. The problem is having many versions of it:
+different boolean words, different defaults, different error messages, and
+tracebacks that point to Python code instead of the cell in the <code>.feature</code>
+file.</p>
+<h2 id="the-missing-layer">The missing layer<a class="headerlink" href="#the-missing-layer" title="Permanent link">⚓︎</a></h2>
+<p>Cucumber-JVM has a <code>DataTableType</code> layer for converting Gherkin tables into
+objects. Python teams using <code>pytest-bdd</code> get the raw table and must build that
+layer themselves.</p>
+<p>That missing layer is where most of the important table decisions actually
+live. It is not just "turn rows into dictionaries". A useful table layer should
+know the expected labels, choose the right orientation, parse cell values,
+apply defaults, reject unknown or misspelled fields, support project vocabulary,
+and return errors that point back to the feature file.</p>
+<p>Without that layer, these rules usually end up scattered across step
+definitions:</p>
+<ul>
+<li>one step accepts <code>yes</code> and <code>no</code>, another accepts <code>true</code> and <code>false</code></li>
+<li>one table treats an empty cell as <code>None</code>, another keeps it as <code>""</code></li>
+<li>one parser supports old labels, another breaks when wording changes</li>
+<li>one failure says which cell is wrong, another only raises <code>ValueError</code></li>
+</ul>
+<p>Talika fills this gap for Python. It sits between the BDD framework and your
+test setup code</p>
+<p>The idea is deliberately small: keep the feature table readable, move table
+rules into one reusable contract, and let the rest of the test work with normal
+Python objects.</p>
+<div class="language-gherkin highlight"><span class="filename">Gherkin</span><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nf">    </span><span class="k">Given </span><span class="nf">The following users are present</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">      |</span><span class="s"> name</span><span class="k">  |</span><span class="s"> age</span><span class="k"> |</span><span class="s"> roles</span><span class="k">               |</span><span class="s"> active</span><span class="k"> |</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">      |</span><span class="s"> Akash</span><span class="k"> |</span><span class="s"> 27</span><span class="k">  |</span><span class="s"> Developer,Manager</span><span class="k">   |</span><span class="s"> Yes</span><span class="k">    |</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">      |</span><span class="s"> Badal</span><span class="k"> |</span><span class="s"> 25</span><span class="k">  |</span><span class="s"> Tester,Scrum Master</span><span class="k"> |</span><span class="s"> No</span><span class="k">     |</span>
 </span></code></pre></div>
-<p>The problem is not that this code is hard once. The problem is that every step
-function invents its own parser, its own defaults, its own conventions, and its
-own weak error messages.</p>
-<h2 id="the-talika-layer">The Talika layer<a class="headerlink" href="#the-talika-layer" title="Permanent link">⚓︎</a></h2>
-<p>Talika puts those rules in one contract:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">talika</span><span class="w"> </span><span class="kn">import</span> <span class="n">RowTable</span><span class="p">,</span> <span class="n">boolean</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">split</span>
+<div class="language-python highlight"><span class="filename">A Talika table contract</span><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">talika</span><span class="w"> </span><span class="kn">import</span> <span class="n">RowTable</span><span class="p">,</span> <span class="n">boolean</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">split</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">UserTable</span><span class="p">(</span><span class="n">RowTable</span><span class="p">):</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">name</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">age</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">roles</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="s2">&quot;roles&quot;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">))</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">active</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="s2">&quot;active&quot;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">boolean</span><span class="p">(),</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">UserTable</span><span class="p">(</span><span class="n">RowTable</span><span class="p">):</span><span class="c1"># (1)!</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">name</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># (2)!</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">age</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span> <span class="c1"># (3)!</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">roles</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="s2">&quot;roles&quot;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span> <span class="c1"># (4)!</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">active</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="s2">&quot;active&quot;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">boolean</span><span class="p">(),</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># (5)!</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">users</span> <span class="o">=</span> <span class="n">UserTable</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">datatable</span><span class="p">)</span> <span class="c1"># (6)!</span>
 </span></code></pre></div>
-<p>Now the authored table stays readable, while the test receives validated
-records.</p>
-<h2 id="comparison">Comparison<a class="headerlink" href="#comparison" title="Permanent link">⚓︎</a></h2>
+<ol>
+<li>
+<p>Defines a new row-oriented table schema. When parsed, each data row in the BDD table will be validated and converted into a <code>UserTable</code> record instance.</p>
+</li>
+<li>
+<p><code>required=True</code></p>
+<p>This column must be present in the table and its cells cannot be empty.</p>
+</li>
+<li>
+<p>Because it is annotated with : <code>int</code>, talika's metaclass automatically infers and assigns an integer parser to this field. You don't need to explicitly pass <code>parser=integer()</code>.</p>
+</li>
+<li>
+<p><code>parser=split(",")</code></p>
+<p>Takes the raw string from the table cell and splits it by commas into a list <code>[str]</code>. By default, it automatically strips whitespace around each item and ignores empty segments.</p>
+</li>
+<li>
+<p><code>parser=boolean()</code></p>
+<p>Strictly converts tokens like "true", "false", "yes", "no" into a bool. Unknown values will raise a validation error   instead of relying on Python's truthiness.</p>
+<p><code>default=True</code></p>
+<p>If the "active" column is entirely missing from the BDD table, the value for all parsed records will default to True.</p>
+</li>
+<li>
+<p>Takes raw rows (or source-aware <code>TableData</code>) from <code>datatable</code>, matches the headers to your declared fields,</p>
+<p>runs the specified parsers (like <code>split</code> and <code>boolean</code>), and validates everything.</p>
+<p>Returns a list of validated <code>UserTable</code> record objects.</p>
+</li>
+</ol>
+<div class="language-bash talika-terminal highlight"><span class="filename">User</span><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>&gt;&gt;<span class="w"> </span>users
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="o">[</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span>UserTable<span class="o">(</span><span class="nv">name</span><span class="o">=</span><span class="s1">&#39;Akash&#39;</span>,<span class="w"> </span><span class="nv">age</span><span class="o">=</span><span class="m">27</span>,<span class="w"> </span><span class="nv">roles</span><span class="o">=[</span><span class="s1">&#39;Developer&#39;</span>,<span class="w"> </span><span class="s1">&#39;Manager&#39;</span><span class="o">]</span>,<span class="w"> </span><span class="nv">active</span><span class="o">=</span>True<span class="o">)</span>,<span class="w"> </span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span>UserTable<span class="o">(</span><span class="nv">name</span><span class="o">=</span><span class="s1">&#39;Badal&#39;</span>,<span class="w"> </span><span class="nv">age</span><span class="o">=</span><span class="m">25</span>,<span class="w"> </span><span class="nv">roles</span><span class="o">=[</span><span class="s1">&#39;Tester&#39;</span>,<span class="w"> </span><span class="s1">&#39;Scrum Master&#39;</span><span class="o">]</span>,<span class="w"> </span><span class="nv">active</span><span class="o">=</span>False<span class="o">)</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="o">]</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>&gt;&gt;<span class="w"> </span>users<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>UserTable<span class="o">(</span><span class="nv">name</span><span class="o">=</span><span class="s1">&#39;Akash&#39;</span>,<span class="w"> </span><span class="nv">age</span><span class="o">=</span><span class="m">27</span>,<span class="w"> </span><span class="nv">roles</span><span class="o">=[</span><span class="s1">&#39;Developer&#39;</span>,<span class="w"> </span><span class="s1">&#39;Manager&#39;</span><span class="o">]</span>,<span class="w"> </span><span class="nv">active</span><span class="o">=</span>True<span class="o">)</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>&gt;&gt;<span class="w"> </span>users<span class="o">[</span><span class="m">0</span><span class="o">]</span>.name
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="s1">&#39;Akash&#39;</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>&gt;&gt;<span class="w"> </span>users<span class="o">[</span><span class="m">0</span><span class="o">]</span>.age
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="m">27</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>&gt;&gt;<span class="w"> </span>type<span class="o">(</span>users<span class="o">[</span><span class="m">0</span><span class="o">]</span>.age<span class="o">)</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>&lt;class<span class="w"> </span><span class="s1">&#39;int&#39;</span>&gt;
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>&gt;&gt;<span class="w"> </span>users<span class="o">[</span><span class="m">0</span><span class="o">]</span>.roles
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="o">[</span><span class="s1">&#39;Developer&#39;</span>,<span class="w"> </span><span class="s1">&#39;Manager&#39;</span><span class="o">]</span>
+</span></code></pre></div>
+<p>Now the table rules live in one reusable contract. The step receives typed
+records, and bad data fails with the field, row, column, item ID when present,
+original value, stable error code, and a human-readable hint.</p>
+<h2 id="what-talika-gives-you">What Talika gives you<a class="headerlink" href="#what-talika-gives-you" title="Permanent link">⚓︎</a></h2>
+<p>Talika is useful because the pieces work together:</p>
+<ul>
+<li><code>RowTable</code> and <code>ColumnTable</code> for the two common table shapes</li>
+<li><code>field()</code>, <code>id_field()</code>, aliases, defaults, and empty-cell policies</li>
+<li>parser factories for booleans, numbers, choices, lists, and composition</li>
+<li><code>CellDSL</code> for project-owned cell vocabulary</li>
+<li>variants when one table contains different record types</li>
+<li>references between records in the same scenario</li>
+<li>source-aware diagnostics with stable error codes</li>
+<li>optional static checks for <code>.feature</code> files</li>
+<li>optional output as dataclasses, Pydantic models, or custom objects</li>
+</ul>
+<p>That source-aware part matters. A useful failure should tell the author where
+to look:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Field parser failed: invalid literal for int() with base 10: &#39;old&#39;
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>(code=parser_failed, schema=UserTable, field=&#39;age&#39;, row=2, column=2, value=&#39;old&#39;).
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>Hint: Check the cell value or adjust the field parser for this syntax.
+</span></code></pre></div>
+<p>The error points to the authored table, not only to the parser function.</p>
+<h2 id="custom-table-language">Custom table language<a class="headerlink" href="#custom-table-language" title="Permanent link">⚓︎</a></h2>
+<p>Talika does not force one DSL on every team. It gives you safe hooks to create
+the vocabulary your feature files need.</p>
+<p>For example, a compact content table might let authors write <code>1-3</code> for three
+IDs and <code>3 Articles</code> to repeat one value across those IDs:</p>
+<div class="language-python highlight"><span class="filename">Compact table syntax</span><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">talika</span><span class="w"> </span><span class="kn">import</span> <span class="n">ColumnGroupExpander</span><span class="p">,</span> <span class="n">NumericRange</span><span class="p">,</span> <span class="n">PrefixRepeat</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">table_transformer</span> <span class="o">=</span> <span class="n">ColumnGroupExpander</span><span class="p">(</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">key_row</span><span class="o">=</span><span class="s2">&quot;IDs&quot;</span><span class="p">,</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">range_rule</span><span class="o">=</span><span class="n">NumericRange</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">),</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">repeat_rule</span><span class="o">=</span><span class="n">PrefixRepeat</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">),</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-gherkin highlight"><span class="filename">Author-friendly table</span><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">Given </span><span class="nf">the following Content is created</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nf">| IDs</span><span class="k">  |</span><span class="s"> 1-3</span><span class="k">        |</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="nf">| Type</span><span class="k"> |</span><span class="s"> 3 Articles</span><span class="k"> |</span>
+</span></code></pre></div>
+<p>Talika can expand that into three logical records while preserving the original
+source cell. If <code>3 Articles</code> is wrong, the diagnostic can still point to that
+exact cell.</p>
+<p>For cell-level vocabulary, use <code>CellDSL</code>:</p>
+<div class="language-python highlight"><span class="filename">Project-owned cell DSL</span><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">talika</span><span class="w"> </span><span class="kn">import</span> <span class="n">CellDSL</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">cells</span> <span class="o">=</span> <span class="n">CellDSL</span><span class="p">()</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="nd">@cells</span><span class="o">.</span><span class="n">token</span><span class="p">(</span><span class="s2">&quot;random&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;headline&quot;</span><span class="p">,))</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">random_headline</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span class="k">return</span> <span class="n">context</span><span class="o">.</span><span class="n">user_data</span><span class="p">[</span><span class="s2">&quot;faker&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">headline</span><span class="p">()</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="nd">@cells</span><span class="o">.</span><span class="n">pattern</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(?P&lt;count&gt;\d+) words&quot;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;body&quot;</span><span class="p">,))</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="k">def</span><span class="w"> </span><span class="nf">generated_words</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    <span class="k">return</span> <span class="n">context</span><span class="o">.</span><span class="n">user_data</span><span class="p">[</span><span class="s2">&quot;faker&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">words</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]))</span>
+</span></code></pre></div>
+<p>Now your tables can use simple words like <code>random</code> or <code>20 words</code>, and your
+project decides exactly what those words mean.</p>
+<h2 id="how-talika-compares">How Talika compares<a class="headerlink" href="#how-talika-compares" title="Permanent link">⚓︎</a></h2>
 <table>
 <thead>
 <tr>
 <th>Tool</th>
-<th>Good at</th>
-<th>Gap Talika covers</th>
+<th>What it is good at</th>
+<th>What Talika adds</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Raw pytest-bdd datatable</td>
-<td>Passing table text into a step</td>
-<td>No contract, typed output, validation layer, or source-aware diagnostics</td>
+<td><code>pytest-bdd</code> datatables</td>
+<td>Passing Gherkin table text into Python steps</td>
+<td>A schema contract, typed records, validation, source-aware errors, and static checking</td>
+</tr>
+<tr>
+<td>Cucumber-JVM <code>DataTableType</code></td>
+<td>Converting Cucumber data tables in the JVM ecosystem</td>
+<td>A Python table-conversion layer designed around <code>pytest-bdd</code>, source metadata, row and column tables, variants, and table transforms</td>
+</tr>
+<tr>
+<td>Pydantic</td>
+<td>Validating Python data models after the data already has shape</td>
+<td>The earlier step: reading a two-dimensional Gherkin table, matching labels, parsing cells, preserving source coordinates, then optionally building Pydantic models</td>
+</tr>
+<tr>
+<td><code>factory_boy</code></td>
+<td>Creating test objects and ORM fixtures from Python factories</td>
+<td>Parsing human-authored feature tables before fixture creation</td>
 </tr>
 <tr>
 <td>Scenario Outlines</td>
-<td>Generating separate scenarios</td>
-<td>Not for structured multi-record data inside one scenario</td>
+<td>Running the same scenario with different example values</td>
+<td>Structured multi-record data inside one scenario</td>
 </tr>
 <tr>
-<td>factory_boy</td>
-<td>Creating data in Python</td>
-<td>Does not validate human-authored <code>.feature</code> tables</td>
-</tr>
-<tr>
-<td>Cucumber DataTableType</td>
-<td>Table conversion in Cucumber stacks</td>
-<td>Not the pytest-bdd Python table contract layer</td>
-</tr>
-<tr>
-<td>Talika</td>
-<td>Compiling pytest-bdd tables into typed records</td>
-<td>Focused on tables only, not a test runner or fixture framework</td>
+<td>Hand-written dict parsing</td>
+<td>Quick one-off conversion</td>
+<td>Reusable parsing rules, consistent validation, better diagnostics, and less drift across steps</td>
 </tr>
 </tbody>
 </table>
-<h2 id="why-source-aware-errors-matter">Why source-aware errors matter<a class="headerlink" href="#why-source-aware-errors-matter" title="Permanent link">⚓︎</a></h2>
-<p>Feature files are edited by humans. A useful failure should tell them where to
-look:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Field parser failed: invalid literal for int() with base 10: &#39;old&#39; (code=parser_failed, schema=UserTable, field=&#39;age&#39;, row=2, column=2, value=&#39;old&#39;). Hint: Check the cell value or adjust the field parser for this syntax.
+<p>These tools can work together. Talika is not trying to replace them.</p>
+<div class="language-python highlight"><span class="filename">Talika with a factory</span><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">records</span> <span class="o">=</span> <span class="n">UserTable</span><span class="o">.</span><span class="n">parse_records</span><span class="p">(</span><span class="n">datatable</span><span class="p">)</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">users</span> <span class="o">=</span> <span class="p">[</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">UserFactory</span><span class="p">(</span><span class="o">**</span><span class="n">record</span><span class="o">.</span><span class="n">as_dict</span><span class="p">())</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="p">]</span>
 </span></code></pre></div>
-<p>That stable <code>code</code> is useful to humans, CI, editors, and future tooling. Talika
-does not ask tools to scrape prose.</p>
+<div class="language-python highlight"><span class="filename">Talika with Pydantic output</span><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">talika</span><span class="w"> </span><span class="kn">import</span> <span class="n">RowTable</span><span class="p">,</span> <span class="n">field</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">User</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="n">age</span><span class="p">:</span> <span class="nb">int</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="k">class</span><span class="w"> </span><span class="nc">UserTable</span><span class="p">(</span><span class="n">RowTable</span><span class="p">):</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>    <span class="n">output_model</span> <span class="o">=</span> <span class="n">User</span>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>    <span class="n">name</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>    <span class="n">age</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span>
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="n">users</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">User</span><span class="p">]</span> <span class="o">=</span> <span class="n">UserTable</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">datatable</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Pydantic validates the model. <code>factory_boy</code> can build the fixture. Talika owns
+the table boundary: labels, cells, source locations, table shape, and table
+authoring rules.</p>
+<h2 id="where-talika-shines">Where Talika shines<a class="headerlink" href="#where-talika-shines" title="Permanent link">⚓︎</a></h2>
+<p>Talika is most useful when table data is part of the product language of your
+tests:</p>
+<ul>
+<li>QA, product, or developers edit <code>.feature</code> files directly.</li>
+<li>You want one reusable contract instead of repeated parsing glue.</li>
+<li>You need strict schema validation without giving up readable tables.</li>
+<li>You want a zero-dependency core and optional integrations only when needed.</li>
+<li>You need custom cell syntax such as <code>random</code>, <code>20 words</code>, <code>today</code>, <code>1-3</code>, or
+  <code>3 Articles</code>.</li>
+<li>You want failures to point to the original <code>.feature</code> cell, even after table
+  transforms.</li>
+<li>You have column-oriented tables, variants, local references, or table-level
+  validation.</li>
+<li>CI or editor tooling should check feature tables before the scenario runs.</li>
+</ul>
 <h2 id="what-talika-is-not">What Talika is not<a class="headerlink" href="#what-talika-is-not" title="Permanent link">⚓︎</a></h2>
-<p>Talika is not a test runner, not a global fixture registry, and not a business
-action layer. It is a compile step for table data: take authored table text,
-validate it, and return objects your tests already know how to use.</p>
+<p>Talika is intentionally narrow.</p>
+<p>It is not a test runner, not a replacement for <code>pytest-bdd</code>, not a fixture
+factory, not a business workflow engine, and not a general object validation
+library. It also does not force one universal Gherkin table DSL.</p>
+<p>Talika owns the mechanics of turning authored tables into useful Python
+objects. Your project owns the meaning of the table. That is the point: simple
+tables for humans, strong contracts for code, and enough extension points to
+grow with your test suite.</p>
 
 
 
